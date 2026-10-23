@@ -1,0 +1,592 @@
+{
+  "schema": "logic-ara-launcher.public-qualification/1",
+  "date": "2026-10-23",
+  "release_status": "experimental-alpha",
+  "host": {
+    "product": "Logic Pro",
+    "version": "12.4",
+    "build": "6707",
+    "architecture": "arm64",
+    "engine_sha256": "f1ec685f407cd8a9ec73d3e94cdf3f7929bdcaa2168f221913c950bae76fec24",
+    "macore_sha256": "331ce81830f253f3d47f9a219264a51c92bd1d66f03cafd166f04a8b5d6a745b",
+    "source_installation_unchanged": true
+  },
+  "plugin": {
+    "product": "RysUpPitch",
+    "candidate_source_commit": "2fee521123f380962f271c10ffaf44c93c6d14fa",
+    "candidate_executable_sha256": "9dfe3880ec887d9ab06d69d1d029ea176e1e194e98386eadf7341d0a35bd2f75",
+    "customer_release_claimed": false
+  },
+  "helpers": {
+    "bridge_sha256": "5c95d2347a4246767b27d356388a0b7f3cfc88c77c0f89d4cdfce9a3b8b43d55",
+    "private_qa_sha256": "24498ec2e037038a212e4ee194f48b2d5b088e06420988157acfc72fa9e052f0",
+    "private_engine_driver_sha256": "50f6aa4fe2f84792ee2014ecc468d9747c694a8d3fc11c5d6d0f6dd14b8288a9"
+  },
+  "qualification_scope": {
+    "sample_rate": 48000,
+    "synthetic_source_frames_each": 192000,
+    "mono_tracks": 3,
+    "mono_regions": 7,
+    "mono_note_components_per_cold_process": 22,
+    "cold_processes": 2,
+    "shared_sources": true,
+    "independent_modifications": true,
+    "source_offsets_and_trims": true,
+    "sequential_regions": true,
+    "simultaneous_tracks": true
+  },
+  "mono_multitrack_audio_and_recall_pass": true,
+  "all_eight_saved_modifications_restored_exactly": true,
+  "cold_repeat": {
+    "all_sample_identical": true,
+    "outputs": [
+      {
+        "label": "full_mix",
+        "identical_length_and_channels": true,
+        "frames": 458752,
+        "sample_rate": 48000,
+        "max_absolute_difference": 0.0,
+        "rms_difference": 0.0,
+        "sample_identical": true
+      },
+      {
+        "label": "ARA Bass",
+        "identical_length_and_channels": true,
+        "frames": 408000,
+        "sample_rate": 48000,
+        "max_absolute_difference": 0.0,
+        "rms_difference": 0.0,
+        "sample_identical": true
+      },
+      {
+        "label": "ARA Harmony",
+        "identical_length_and_channels": true,
+        "frames": 408000,
+        "sample_rate": 48000,
+        "max_absolute_difference": 0.0,
+        "rms_difference": 0.0,
+        "sample_identical": true
+      },
+      {
+        "label": "ARA Lead",
+        "identical_length_and_channels": true,
+        "frames": 458752,
+        "sample_rate": 48000,
+        "max_absolute_difference": 0.0,
+        "rms_difference": 0.0,
+        "sample_identical": true
+      },
+      {
+        "label": "ARA Stereo",
+        "identical_length_and_channels": true,
+        "frames": 408000,
+        "sample_rate": 48000,
+        "max_absolute_difference": 0.0,
+        "rms_difference": 0.0,
+        "sample_identical": true
+      }
+    ]
+  },
+  "phases": [
+    {
+      "phase": "cold-reopen-1",
+      "mono_tracks": [
+        {
+          "synthetic_track": "lead",
+          "note_components": 8,
+          "pass": true,
+          "maximum_absolute_pitch_error_cents": 0.5323786641301801,
+          "components": [
+            {
+              "region": "Lead full A",
+              "note_index": 0,
+              "expected_hz": 277.1826309768721,
+              "measured_hz": 277.2220178085908,
+              "error_cents": 0.24598575939219194,
+              "pass": true,
+              "old_pitch_rejection_ratio": 0.0024490043136637593
+            },
+            {
+              "region": "Lead full A",
+              "note_index": 1,
+              "expected_hz": 293.6647679174076,
+              "measured_hz": 293.66476522339303,
+              "error_cents": -1.588195183757413e-05,
+              "pass": true,
+              "old_pitch_rejection_ratio": null
+            },
+            {
+              "region": "Lead full A",
+              "note_index": 2,
+              "expected_hz": 329.6275569128699,
+              "measured_hz": 329.62755960302485,
+              "error_cents": 1.4128939468154706e-05,
+              "pass": true,
+              "old_pitch_rejection_ratio": null
+            },
+            {
+              "region": "Lead full A",
+              "note_index": 3,
+              "expected_hz": 391.99543598174927,
+              "measured_hz": 391.9954328061195,
+              "error_cents": -1.4025057266240095e-05,
+              "pass": true,
+              "old_pitch_rejection_ratio": null
+            },
+            {
+              "region": "Lead reused B",
+              "note_index": 0,
+              "expected_hz": 233.08188075904496,
+              "measured_hz": 233.0102158429324,
+              "error_cents": -0.5323786641301801,
+              "pass": true,
+              "old_pitch_rejection_ratio": 0.002542535387558752
+            },
+            {
+              "region": "Lead reused B",
+              "note_index": 1,
+              "expected_hz": 293.6647679174076,
+              "measured_hz": 293.66476522339303,
+              "error_cents": -1.588195183757413e-05,
+              "pass": true,
+              "old_pitch_rejection_ratio": null
+            },
+            {
+              "region": "Lead reused B",
+              "note_index": 2,
+              "expected_hz": 329.6275569128699,
+              "measured_hz": 329.62755960302485,
+              "error_cents": 1.4128939468154706e-05,
+              "pass": true,
+              "old_pitch_rejection_ratio": null
+            },
+            {
+              "region": "Lead reused B",
+              "note_index": 3,
+              "expected_hz": 391.99543598174927,
+              "measured_hz": 391.9954328061195,
+              "error_cents": -1.4025057266240095e-05,
+              "pass": true,
+              "old_pitch_rejection_ratio": null
+            }
+          ]
+        },
+        {
+          "synthetic_track": "harmony",
+          "note_components": 6,
+          "pass": true,
+          "maximum_absolute_pitch_error_cents": 0.9215013281852412,
+          "components": [
+            {
+              "region": "Harmony first half",
+              "note_index": 0,
+              "expected_hz": 587.3295358348151,
+              "measured_hz": 587.1449263740361,
+              "error_cents": -0.5442471457601176,
+              "pass": true,
+              "old_pitch_rejection_ratio": 0.002839554190069351
+            },
+            {
+              "region": "Harmony first half",
+              "note_index": 1,
+              "expected_hz": 587.3295358348151,
+              "measured_hz": 587.3295380818465,
+              "error_cents": 6.6234319198114265e-06,
+              "pass": true,
+              "old_pitch_rejection_ratio": null
+            },
+            {
+              "region": "Harmony trim offset 2",
+              "note_index": 0,
+              "expected_hz": 622.2539674441618,
+              "measured_hz": 622.3503753122088,
+              "error_cents": 0.2682050485618041,
+              "pass": true,
+              "old_pitch_rejection_ratio": 0.002605085314048869
+            },
+            {
+              "region": "Harmony trim offset 2",
+              "note_index": 1,
+              "expected_hz": 783.9908719634985,
+              "measured_hz": 783.9908754284949,
+              "error_cents": 7.651517321858763e-06,
+              "pass": true,
+              "old_pitch_rejection_ratio": null
+            },
+            {
+              "region": "Harmony reused trim offset 1",
+              "note_index": 0,
+              "expected_hz": 698.4564628660078,
+              "measured_hz": 698.0847873588003,
+              "error_cents": -0.9215013281852412,
+              "pass": true,
+              "old_pitch_rejection_ratio": 0.0032021324506491806
+            },
+            {
+              "region": "Harmony reused trim offset 1",
+              "note_index": 1,
+              "expected_hz": 659.2551138257398,
+              "measured_hz": 659.2551103882579,
+              "error_cents": -9.026984773265364e-06,
+              "pass": true,
+              "old_pitch_rejection_ratio": null
+            }
+          ]
+        },
+        {
+          "synthetic_track": "bass",
+          "note_components": 8,
+          "pass": true,
+          "maximum_absolute_pitch_error_cents": 0.03360629663675726,
+          "components": [
+            {
+              "region": "Bass full A",
+              "note_index": 0,
+              "expected_hz": 123.47082531403103,
+              "measured_hz": 123.4721396707912,
+              "error_cents": 0.018429026119179927,
+              "pass": true,
+              "old_pitch_rejection_ratio": 0.0035979226999620145
+            },
+            {
+              "region": "Bass full A",
+              "note_index": 1,
+              "expected_hz": 146.8323839587038,
+              "measured_hz": 146.8323810696488,
+              "error_cents": -3.406353765416861e-05,
+              "pass": true,
+              "old_pitch_rejection_ratio": null
+            },
+            {
+              "region": "Bass full A",
+              "note_index": 2,
+              "expected_hz": 164.81377845643496,
+              "measured_hz": 164.8137809261135,
+              "error_cents": 2.5941954490644395e-05,
+              "pass": true,
+              "old_pitch_rejection_ratio": null
+            },
+            {
+              "region": "Bass full A",
+              "note_index": 3,
+              "expected_hz": 195.99771799087463,
+              "measured_hz": 195.99771500186762,
+              "error_cents": -2.6401688746716012e-05,
+              "pass": true,
+              "old_pitch_rejection_ratio": null
+            },
+            {
+              "region": "Bass reused B",
+              "note_index": 0,
+              "expected_hz": 146.8323839587038,
+              "measured_hz": 146.82953371164413,
+              "error_cents": -0.03360629663675726,
+              "pass": true,
+              "old_pitch_rejection_ratio": 0.00020882569676313728
+            },
+            {
+              "region": "Bass reused B",
+              "note_index": 1,
+              "expected_hz": 146.8323839587038,
+              "measured_hz": 146.8323810696488,
+              "error_cents": -3.406353765416861e-05,
+              "pass": true,
+              "old_pitch_rejection_ratio": null
+            },
+            {
+              "region": "Bass reused B",
+              "note_index": 2,
+              "expected_hz": 164.81377845643496,
+              "measured_hz": 164.8137809261135,
+              "error_cents": 2.5941954490644395e-05,
+              "pass": true,
+              "old_pitch_rejection_ratio": null
+            },
+            {
+              "region": "Bass reused B",
+              "note_index": 3,
+              "expected_hz": 195.99771799087463,
+              "measured_hz": 195.99771500186762,
+              "error_cents": -2.6401688746716012e-05,
+              "pass": true,
+              "old_pitch_rejection_ratio": null
+            }
+          ]
+        }
+      ],
+      "all_saved_modifications_restored": true,
+      "restored_modification_count": 8,
+      "mix_equals_sum_of_four_solo_stems": {
+        "pass": true,
+        "maximum_absolute_residual": 3.5762786865234375e-07,
+        "rms_residual": 5.7892151835889254e-08,
+        "pcm_quantization_bound": 5.960464477539062e-07,
+        "timeline_alignment_frames": 0,
+        "gain_or_delay_fit": false
+      },
+      "stereo_image": {
+        "qualified": false,
+        "image_check_pass": false,
+        "expected_right_left_ratio": 0.67,
+        "measured_right_left_ratios": [
+          0.8023380026125745,
+          0.8023379965616763
+        ]
+      }
+    },
+    {
+      "phase": "cold-reopen-2",
+      "mono_tracks": [
+        {
+          "synthetic_track": "lead",
+          "note_components": 8,
+          "pass": true,
+          "maximum_absolute_pitch_error_cents": 0.5323786641301801,
+          "components": [
+            {
+              "region": "Lead full A",
+              "note_index": 0,
+              "expected_hz": 277.1826309768721,
+              "measured_hz": 277.2220178085908,
+              "error_cents": 0.24598575939219194,
+              "pass": true,
+              "old_pitch_rejection_ratio": 0.0024490043136637593
+            },
+            {
+              "region": "Lead full A",
+              "note_index": 1,
+              "expected_hz": 293.6647679174076,
+              "measured_hz": 293.66476522339303,
+              "error_cents": -1.588195183757413e-05,
+              "pass": true,
+              "old_pitch_rejection_ratio": null
+            },
+            {
+              "region": "Lead full A",
+              "note_index": 2,
+              "expected_hz": 329.6275569128699,
+              "measured_hz": 329.62755960302485,
+              "error_cents": 1.4128939468154706e-05,
+              "pass": true,
+              "old_pitch_rejection_ratio": null
+            },
+            {
+              "region": "Lead full A",
+              "note_index": 3,
+              "expected_hz": 391.99543598174927,
+              "measured_hz": 391.9954328061195,
+              "error_cents": -1.4025057266240095e-05,
+              "pass": true,
+              "old_pitch_rejection_ratio": null
+            },
+            {
+              "region": "Lead reused B",
+              "note_index": 0,
+              "expected_hz": 233.08188075904496,
+              "measured_hz": 233.0102158429324,
+              "error_cents": -0.5323786641301801,
+              "pass": true,
+              "old_pitch_rejection_ratio": 0.002542535387558752
+            },
+            {
+              "region": "Lead reused B",
+              "note_index": 1,
+              "expected_hz": 293.6647679174076,
+              "measured_hz": 293.66476522339303,
+              "error_cents": -1.588195183757413e-05,
+              "pass": true,
+              "old_pitch_rejection_ratio": null
+            },
+            {
+              "region": "Lead reused B",
+              "note_index": 2,
+              "expected_hz": 329.6275569128699,
+              "measured_hz": 329.62755960302485,
+              "error_cents": 1.4128939468154706e-05,
+              "pass": true,
+              "old_pitch_rejection_ratio": null
+            },
+            {
+              "region": "Lead reused B",
+              "note_index": 3,
+              "expected_hz": 391.99543598174927,
+              "measured_hz": 391.9954328061195,
+              "error_cents": -1.4025057266240095e-05,
+              "pass": true,
+              "old_pitch_rejection_ratio": null
+            }
+          ]
+        },
+        {
+          "synthetic_track": "harmony",
+          "note_components": 6,
+          "pass": true,
+          "maximum_absolute_pitch_error_cents": 0.9215013281852412,
+          "components": [
+            {
+              "region": "Harmony first half",
+              "note_index": 0,
+              "expected_hz": 587.3295358348151,
+              "measured_hz": 587.1449263740361,
+              "error_cents": -0.5442471457601176,
+              "pass": true,
+              "old_pitch_rejection_ratio": 0.002839554190069351
+            },
+            {
+              "region": "Harmony first half",
+              "note_index": 1,
+              "expected_hz": 587.3295358348151,
+              "measured_hz": 587.3295380818465,
+              "error_cents": 6.6234319198114265e-06,
+              "pass": true,
+              "old_pitch_rejection_ratio": null
+            },
+            {
+              "region": "Harmony trim offset 2",
+              "note_index": 0,
+              "expected_hz": 622.2539674441618,
+              "measured_hz": 622.3503753122088,
+              "error_cents": 0.2682050485618041,
+              "pass": true,
+              "old_pitch_rejection_ratio": 0.002605085314048869
+            },
+            {
+              "region": "Harmony trim offset 2",
+              "note_index": 1,
+              "expected_hz": 783.9908719634985,
+              "measured_hz": 783.9908754284949,
+              "error_cents": 7.651517321858763e-06,
+              "pass": true,
+              "old_pitch_rejection_ratio": null
+            },
+            {
+              "region": "Harmony reused trim offset 1",
+              "note_index": 0,
+              "expected_hz": 698.4564628660078,
+              "measured_hz": 698.0847873588003,
+              "error_cents": -0.9215013281852412,
+              "pass": true,
+              "old_pitch_rejection_ratio": 0.0032021324506491806
+            },
+            {
+              "region": "Harmony reused trim offset 1",
+              "note_index": 1,
+              "expected_hz": 659.2551138257398,
+              "measured_hz": 659.2551103882579,
+              "error_cents": -9.026984773265364e-06,
+              "pass": true,
+              "old_pitch_rejection_ratio": null
+            }
+          ]
+        },
+        {
+          "synthetic_track": "bass",
+          "note_components": 8,
+          "pass": true,
+          "maximum_absolute_pitch_error_cents": 0.03360629663675726,
+          "components": [
+            {
+              "region": "Bass full A",
+              "note_index": 0,
+              "expected_hz": 123.47082531403103,
+              "measured_hz": 123.4721396707912,
+              "error_cents": 0.018429026119179927,
+              "pass": true,
+              "old_pitch_rejection_ratio": 0.0035979226999620145
+            },
+            {
+              "region": "Bass full A",
+              "note_index": 1,
+              "expected_hz": 146.8323839587038,
+              "measured_hz": 146.8323810696488,
+              "error_cents": -3.406353765416861e-05,
+              "pass": true,
+              "old_pitch_rejection_ratio": null
+            },
+            {
+              "region": "Bass full A",
+              "note_index": 2,
+              "expected_hz": 164.81377845643496,
+              "measured_hz": 164.8137809261135,
+              "error_cents": 2.5941954490644395e-05,
+              "pass": true,
+              "old_pitch_rejection_ratio": null
+            },
+            {
+              "region": "Bass full A",
+              "note_index": 3,
+              "expected_hz": 195.99771799087463,
+              "measured_hz": 195.99771500186762,
+              "error_cents": -2.6401688746716012e-05,
+              "pass": true,
+              "old_pitch_rejection_ratio": null
+            },
+            {
+              "region": "Bass reused B",
+              "note_index": 0,
+              "expected_hz": 146.8323839587038,
+              "measured_hz": 146.82953371164413,
+              "error_cents": -0.03360629663675726,
+              "pass": true,
+              "old_pitch_rejection_ratio": 0.00020882569676313728
+            },
+            {
+              "region": "Bass reused B",
+              "note_index": 1,
+              "expected_hz": 146.8323839587038,
+              "measured_hz": 146.8323810696488,
+              "error_cents": -3.406353765416861e-05,
+              "pass": true,
+              "old_pitch_rejection_ratio": null
+            },
+            {
+              "region": "Bass reused B",
+              "note_index": 2,
+              "expected_hz": 164.81377845643496,
+              "measured_hz": 164.8137809261135,
+              "error_cents": 2.5941954490644395e-05,
+              "pass": true,
+              "old_pitch_rejection_ratio": null
+            },
+            {
+              "region": "Bass reused B",
+              "note_index": 3,
+              "expected_hz": 195.99771799087463,
+              "measured_hz": 195.99771500186762,
+              "error_cents": -2.6401688746716012e-05,
+              "pass": true,
+              "old_pitch_rejection_ratio": null
+            }
+          ]
+        }
+      ],
+      "all_saved_modifications_restored": true,
+      "restored_modification_count": 8,
+      "mix_equals_sum_of_four_solo_stems": {
+        "pass": true,
+        "maximum_absolute_residual": 3.5762786865234375e-07,
+        "rms_residual": 5.7892151835889254e-08,
+        "pcm_quantization_bound": 5.960464477539062e-07,
+        "timeline_alignment_frames": 0,
+        "gain_or_delay_fit": false
+      },
+      "stereo_image": {
+        "qualified": false,
+        "image_check_pass": false,
+        "expected_right_left_ratio": 0.67,
+        "measured_right_left_ratios": [
+          0.8023380026125745,
+          0.8023379965616763
+        ]
+      }
+    }
+  ],
+  "stereo_qualified": false,
+  "general_ara_compatibility_qualified": false,
+  "limitations": [
+    "Native host stereo source data in this fixture became [mean(original left,right),original right]; stereo image remains unqualified.",
+    "Only the stated Logic build and private RysUpPitch candidate were qualified. No licensed Melodyne editing test was performed.",
+    "These synthetic checks do not establish broad session stability, arbitrary ARA plugin compatibility, or routine customer readiness."
+  ],
+  "privacy": "Allow-listed numerical evidence only; no local paths, process IDs, source audio, Apple binaries or private test helper source."
+}
