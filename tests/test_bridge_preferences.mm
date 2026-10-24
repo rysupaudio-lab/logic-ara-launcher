@@ -25,7 +25,12 @@ int main() { @autoreleasepool {
     capturedStandardDefaults = [NSUserDefaults standardUserDefaults];
     NSUserDefaults* cached = capturedStandardDefaults;
     isolatedDefaults = [[NSUserDefaults alloc] initWithSuiteName:privateName];
+    NSMutableDictionary* initialArguments = [[isolatedDefaults volatileDomainForName:NSArgumentDomain] mutableCopy];
+    initialArguments[@"RysUpSyntheticUnrelatedArgument"] = @"preserved";
+    [isolatedDefaults setVolatileDomain:initialArguments forName:NSArgumentDomain];
     installPrivatePreferenceArguments();
+    check(equal([isolatedDefaults volatileDomainForName:NSArgumentDomain][@"RysUpSyntheticUnrelatedArgument"], @"preserved"), "private argument helper preserves unrelated arguments");
+    check(equal([cached volatileDomainForName:NSArgumentDomain][@"RysUpSyntheticUnrelatedArgument"], @"preserved"), "shared original argument domain preserves unrelated arguments");
     NSUserDefaults* originalSuite = [[NSUserDefaults alloc] initWithSuiteName:originalName];
     NSUserDefaults* vendor = [[NSUserDefaults alloc] initWithSuiteName:vendorName];
     [originalSuite setPersistentDomain:@{@"identity": @"original", @"untouched": @17} forName:originalName];

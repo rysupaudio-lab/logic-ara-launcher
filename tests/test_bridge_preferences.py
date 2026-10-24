@@ -23,7 +23,7 @@ class BridgePreferencesTests(unittest.TestCase):
                                     capture_output=True, text=True, timeout=30)
             proof = json.loads(result.stdout)
             self.assertTrue(proof['pass'])
-            self.assertEqual(proof['checks'], 50)
+            self.assertEqual(proof['checks'], 52)
             self.assertIn('unique synthetic domains only', proof['scope'])
 
 

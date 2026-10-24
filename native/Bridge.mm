@@ -765,9 +765,14 @@ void installPrivatePreferenceArguments() {
     // rather than the XPC panel service masquerading as the original bundle.
     // The launcher also passes the same argument before framework startup to
     // cover an AppKit config cache initialized before this constructor.
-    [isolatedDefaults setVolatileDomain:@{@"ApplePersistenceIgnoreState": @YES, @"NSQuitAlwaysKeepsWindows": @NO,
-                                       @"NSUseRemoteSavePanel": @NO}
-                              forName:NSArgumentDomain];
+    // NSArgumentDomain is shared within this process, including explicit
+    // suites. Preserve launch/framework arguments instead of replacing them.
+    NSMutableDictionary* arguments = [[isolatedDefaults volatileDomainForName:NSArgumentDomain] mutableCopy];
+    if (!arguments) arguments = [[NSMutableDictionary alloc] init];
+    arguments[@"ApplePersistenceIgnoreState"] = @YES;
+    arguments[@"NSQuitAlwaysKeepsWindows"] = @NO;
+    arguments[@"NSUseRemoteSavePanel"] = @NO;
+    [isolatedDefaults setVolatileDomain:arguments forName:NSArgumentDomain];
 }
 
 using RemotePanelConfigFn = bool (*)();
