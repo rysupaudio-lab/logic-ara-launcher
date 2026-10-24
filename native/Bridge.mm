@@ -5,6 +5,7 @@
 #import <AudioToolbox/AudioToolbox.h>
 #import <Carbon/Carbon.h>
 #import <objc/runtime.h>
+#import <objc/message.h>
 #include <CommonCrypto/CommonDigest.h>
 #include <mach-o/dyld.h>
 #include <mach/mach.h>
@@ -43,6 +44,7 @@ std::atomic<bool> active{false};
 std::atomic<bool> nativeARASetupEnabled{true};
 CFStringRef preferenceDomain;
 NSUserDefaults* isolatedDefaults;
+NSUserDefaults* capturedStandardDefaults;
 void** tagPlistVtable;
 
 using SetupFn = void (*)(void*);
@@ -245,10 +247,21 @@ bool hashMatches(NSString* path, const char* expected) {
     return strcmp(hexadecimal, expected) == 0;
 }
 
+#if defined(LOGIC_ARA_BRIDGE_TEST)
+// Unit tests use a disposable synthetic domain, never the user's Logic domain.
+CFStringRef testLogicPreferencesDomain = CFSTR("org.rysupaudio.logic-ara-test.original");
+#endif
+CFStringRef logicPreferencesDomain() {
+#if defined(LOGIC_ARA_BRIDGE_TEST)
+    return testLogicPreferencesDomain;
+#else
+    return CFSTR("com.apple.logic10");
+#endif
+}
 CFStringRef isolatedDomain(CFStringRef application) {
     if (active.load(std::memory_order_acquire) && application &&
         (CFEqual(application, kCFPreferencesCurrentApplication) ||
-         CFEqual(application, CFSTR("com.apple.logic10")))) return preferenceDomain;
+         CFEqual(application, logicPreferencesDomain()))) return preferenceDomain;
     return application;
 }
 CFPropertyListRef preferencesCopy(CFStringRef key, CFStringRef app) {
@@ -295,6 +308,159 @@ CFArrayRef preferencesCopyKeyList(CFStringRef app, CFStringRef user, CFStringRef
     return CFPreferencesCopyKeyList(isolatedDomain(app), user, host);
 }
 id standardDefaults(id, SEL) { return isolatedDefaults; }
+
+// AppKit may retain the original standard object before our constructor runs.
+// Changing only +standardUserDefaults does not redirect those cached receivers.
+// Override public NSUserDefaults operations, forwarding only that exact object
+// to the private suite. Other receivers retain their original implementation.
+// Explicit Logic domain names are redirected; unrelated suites/global domains
+// are passed through. No private NSUserDefaults ivar or CF object is modified.
+struct DefaultsOperation { const char* name; IMP replacement; SEL selector; IMP original; Method method; };
+IMP originalDefaultsOperation(SEL selector);
+id defaultsReceiver(id self) {
+    return active.load(std::memory_order_acquire) && self == capturedStandardDefaults ? isolatedDefaults : self;
+}
+NSString* defaultsDomainName(NSString* name) {
+    return name ? (__bridge NSString*)isolatedDomain((__bridge CFStringRef)name) : nil;
+}
+
+#define DEFAULTS_KEY_GETTER(function, type) \
+type function(id self, SEL selector, NSString* key) { \
+    id target = defaultsReceiver(self); \
+    using Call = type (*)(id, SEL, NSString*); \
+    return target != self ? reinterpret_cast<Call>(objc_msgSend)(target, selector, key) : \
+        reinterpret_cast<Call>(originalDefaultsOperation(selector))(self, selector, key); \
+}
+DEFAULTS_KEY_GETTER(defaultsObjectForKey, id)
+DEFAULTS_KEY_GETTER(defaultsIntegerForKey, NSInteger)
+DEFAULTS_KEY_GETTER(defaultsFloatForKey, float)
+DEFAULTS_KEY_GETTER(defaultsDoubleForKey, double)
+DEFAULTS_KEY_GETTER(defaultsBoolForKey, BOOL)
+#undef DEFAULTS_KEY_GETTER
+#define DEFAULTS_KEY_SETTER(function, type) \
+void function(id self, SEL selector, type value, NSString* key) { \
+    id target = defaultsReceiver(self); \
+    using Call = void (*)(id, SEL, type, NSString*); \
+    if (target != self) reinterpret_cast<Call>(objc_msgSend)(target, selector, value, key); \
+    else reinterpret_cast<Call>(originalDefaultsOperation(selector))(self, selector, value, key); \
+}
+DEFAULTS_KEY_SETTER(defaultsSetObject, id)
+DEFAULTS_KEY_SETTER(defaultsSetInteger, NSInteger)
+DEFAULTS_KEY_SETTER(defaultsSetFloat, float)
+DEFAULTS_KEY_SETTER(defaultsSetDouble, double)
+DEFAULTS_KEY_SETTER(defaultsSetBool, BOOL)
+#undef DEFAULTS_KEY_SETTER
+void defaultsOneObject(id self, SEL selector, id value) {
+    id target = defaultsReceiver(self);
+    using Call = void (*)(id, SEL, id);
+    if (target != self) reinterpret_cast<Call>(objc_msgSend)(target, selector, value);
+    else reinterpret_cast<Call>(originalDefaultsOperation(selector))(self, selector, value);
+}
+id defaultsRepresentation(id self, SEL selector) {
+    id target = defaultsReceiver(self);
+    using Call = id (*)(id, SEL);
+    return target != self ? reinterpret_cast<Call>(objc_msgSend)(target, selector) :
+        reinterpret_cast<Call>(originalDefaultsOperation(selector))(self, selector);
+}
+BOOL defaultsSynchronize(id self, SEL selector) {
+    id target = defaultsReceiver(self);
+    using Call = BOOL (*)(id, SEL);
+    return target != self ? reinterpret_cast<Call>(objc_msgSend)(target, selector) :
+        reinterpret_cast<Call>(originalDefaultsOperation(selector))(self, selector);
+}
+id defaultsDomainForName(id self, SEL selector, NSString* name) {
+    id target = defaultsReceiver(self);
+    using Call = id (*)(id, SEL, NSString*);
+    name = defaultsDomainName(name);
+    return target != self ? reinterpret_cast<Call>(objc_msgSend)(target, selector, name) :
+        reinterpret_cast<Call>(originalDefaultsOperation(selector))(self, selector, name);
+}
+void defaultsNamedDomain(id self, SEL selector, NSString* name) {
+    id target = defaultsReceiver(self);
+    using Call = void (*)(id, SEL, NSString*);
+    name = defaultsDomainName(name);
+    if (target != self) reinterpret_cast<Call>(objc_msgSend)(target, selector, name);
+    else reinterpret_cast<Call>(originalDefaultsOperation(selector))(self, selector, name);
+}
+void defaultsSetDomain(id self, SEL selector, NSDictionary* value, NSString* name) {
+    id target = defaultsReceiver(self);
+    using Call = void (*)(id, SEL, NSDictionary*, NSString*);
+    name = defaultsDomainName(name);
+    if (target != self) reinterpret_cast<Call>(objc_msgSend)(target, selector, value, name);
+    else reinterpret_cast<Call>(originalDefaultsOperation(selector))(self, selector, value, name);
+}
+BOOL defaultsForcedInDomain(id self, SEL selector, NSString* key, NSString* name) {
+    id target = defaultsReceiver(self);
+    using Call = BOOL (*)(id, SEL, NSString*, NSString*);
+    name = defaultsDomainName(name);
+    return target != self ? reinterpret_cast<Call>(objc_msgSend)(target, selector, key, name) :
+        reinterpret_cast<Call>(originalDefaultsOperation(selector))(self, selector, key, name);
+}
+#define DEFAULTS_OPERATION(selector, function) {selector, reinterpret_cast<IMP>(function), nullptr, nullptr, nullptr}
+DefaultsOperation defaultsOperations[] = {
+    DEFAULTS_OPERATION("objectForKey:", defaultsObjectForKey),
+    DEFAULTS_OPERATION("stringForKey:", defaultsObjectForKey),
+    DEFAULTS_OPERATION("arrayForKey:", defaultsObjectForKey),
+    DEFAULTS_OPERATION("dictionaryForKey:", defaultsObjectForKey),
+    DEFAULTS_OPERATION("dataForKey:", defaultsObjectForKey),
+    DEFAULTS_OPERATION("stringArrayForKey:", defaultsObjectForKey),
+    DEFAULTS_OPERATION("URLForKey:", defaultsObjectForKey),
+    DEFAULTS_OPERATION("valueForKey:", defaultsObjectForKey),
+    DEFAULTS_OPERATION("integerForKey:", defaultsIntegerForKey),
+    DEFAULTS_OPERATION("floatForKey:", defaultsFloatForKey),
+    DEFAULTS_OPERATION("doubleForKey:", defaultsDoubleForKey),
+    DEFAULTS_OPERATION("boolForKey:", defaultsBoolForKey),
+    DEFAULTS_OPERATION("objectIsForcedForKey:", defaultsBoolForKey),
+    DEFAULTS_OPERATION("setObject:forKey:", defaultsSetObject),
+    DEFAULTS_OPERATION("setValue:forKey:", defaultsSetObject),
+    DEFAULTS_OPERATION("setURL:forKey:", defaultsSetObject),
+    DEFAULTS_OPERATION("setInteger:forKey:", defaultsSetInteger),
+    DEFAULTS_OPERATION("setFloat:forKey:", defaultsSetFloat),
+    DEFAULTS_OPERATION("setDouble:forKey:", defaultsSetDouble),
+    DEFAULTS_OPERATION("setBool:forKey:", defaultsSetBool),
+    DEFAULTS_OPERATION("removeObjectForKey:", defaultsOneObject),
+    DEFAULTS_OPERATION("registerDefaults:", defaultsOneObject),
+    DEFAULTS_OPERATION("dictionaryRepresentation", defaultsRepresentation),
+    DEFAULTS_OPERATION("volatileDomainNames", defaultsRepresentation),
+    DEFAULTS_OPERATION("persistentDomainNames", defaultsRepresentation),
+    DEFAULTS_OPERATION("synchronize", defaultsSynchronize),
+    DEFAULTS_OPERATION("persistentDomainForName:", defaultsDomainForName),
+    DEFAULTS_OPERATION("volatileDomainForName:", defaultsDomainForName),
+    DEFAULTS_OPERATION("setPersistentDomain:forName:", defaultsSetDomain),
+    DEFAULTS_OPERATION("setVolatileDomain:forName:", defaultsSetDomain),
+    DEFAULTS_OPERATION("removePersistentDomainForName:", defaultsNamedDomain),
+    DEFAULTS_OPERATION("removeVolatileDomainForName:", defaultsNamedDomain),
+    DEFAULTS_OPERATION("addSuiteNamed:", defaultsNamedDomain),
+    DEFAULTS_OPERATION("removeSuiteNamed:", defaultsNamedDomain),
+    DEFAULTS_OPERATION("objectIsForcedForKey:inDomain:", defaultsForcedInDomain)
+};
+#undef DEFAULTS_OPERATION
+IMP originalDefaultsOperation(SEL selector) {
+    for (const auto& operation : defaultsOperations) if (operation.selector == selector) return operation.original;
+    return nullptr; // Only exact installed selectors can enter these functions.
+}
+void installDefaultsInstanceIsolation() {
+    Class base = [NSUserDefaults class];
+    if (!capturedStandardDefaults || !isolatedDefaults || capturedStandardDefaults == isolatedDefaults)
+        refuse("cached_defaults_identity_unavailable");
+    // Validate every selector before changing any dispatch. Unrecognized
+    // Foundation subclasses must fail before ordinary app use, not half-install.
+    for (auto& operation : defaultsOperations) {
+        operation.selector = sel_registerName(operation.name);
+        operation.method = class_getInstanceMethod(base, operation.selector);
+        if (!operation.method) refuse("defaults_operation_unavailable");
+        operation.original = method_getImplementation(operation.method);
+        if (class_getMethodImplementation(object_getClass(capturedStandardDefaults), operation.selector) != operation.original)
+            refuse("cached_defaults_override_unqualified");
+    }
+    for (auto& operation : defaultsOperations) {
+        // Add an override when an API (e.g. KVC) was inherited; never alter an
+        // NSObject method used by unrelated classes in the process.
+        if (!class_addMethod(base, operation.selector, operation.replacement, method_getTypeEncoding(operation.method)))
+            method_setImplementation(class_getInstanceMethod(base, operation.selector), operation.replacement);
+    }
+    logLine("preferences_cached_standard_redirected methods=%zu explicit_logic_domains=1 other_receivers_preserved=1", sizeof(defaultsOperations) / sizeof(defaultsOperations[0]));
+}
 
 NSArray* (*originalRunningApplications)(id, SEL);
 NSArray* runningApplications(id self, SEL selector) {
@@ -487,6 +653,7 @@ void installWrapper(NSString* enginePath, NSString* corePath) {
 }
 
 void installProcessIsolation() {
+    capturedStandardDefaults = [NSUserDefaults standardUserDefaults];
     isolatedDefaults = [[NSUserDefaults alloc] initWithSuiteName:(__bridge NSString*)preferenceDomain];
     if (!isolatedDefaults) refuse("preferences_suite_unavailable");
     [isolatedDefaults setVolatileDomain:@{@"ApplePersistenceIgnoreState": @YES, @"NSQuitAlwaysKeepsWindows": @NO}
@@ -495,6 +662,7 @@ void installProcessIsolation() {
     Method applications = class_getInstanceMethod([NSWorkspace class], @selector(runningApplications));
     Method byID = class_getClassMethod([NSRunningApplication class], @selector(runningApplicationsWithBundleIdentifier:));
     if (!defaults || !applications || !byID) refuse("isolation_method_unavailable");
+    installDefaultsInstanceIsolation();
     method_setImplementation(defaults, reinterpret_cast<IMP>(standardDefaults));
     originalRunningApplications = reinterpret_cast<NSArray*(*)(id, SEL)>(method_setImplementation(applications, reinterpret_cast<IMP>(runningApplications)));
     originalRunningApplicationsForID = reinterpret_cast<NSArray*(*)(id, SEL, NSString*)>(method_setImplementation(byID, reinterpret_cast<IMP>(runningApplicationsForID)));
