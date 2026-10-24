@@ -15,7 +15,7 @@ import sys
 import time
 import uuid
 
-VERSION = "0.1.0-alpha.1"
+VERSION = "0.1.0-alpha.2"
 ENGINE = Path("Contents/Frameworks/MAAudioEngine.framework/Versions/A/MAAudioEngine")
 MACORE = Path("Contents/Frameworks/MACore.framework/Versions/A/MACore")
 MACORE_HASH = "331ce81830f253f3d47f9a219264a51c92bd1d66f03cafd166f04a8b5d6a745b"

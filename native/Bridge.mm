@@ -50,6 +50,23 @@ using GetFactoryFn = const void* (*)(void*, AudioUnit);
 SetupFn originalSetup;
 CreateAUFn createNativeAU;
 GetFactoryFn getNativeFactory;
+using ReadSamplesFn = int32_t (*)(void*, void*, int64_t, int64_t, void* const*);
+using StreamModeFn = int32_t (*)(void*);
+ReadSamplesFn originalReadSamples;
+StreamModeFn originalStreamMode;
+void** sourceVtable;
+void** streamVtable;
+void* regionEntryVtable;
+thread_local void* stereoReaderStream;
+thread_local unsigned stereoReaderCorrections;
+std::atomic<unsigned> stereoReaderLogCount{0};
+
+template<class T> bool readSelf(uintptr_t address, T& value) {
+    if (!address) return false;
+    mach_vm_size_t copied = 0;
+    return mach_vm_read_overwrite(mach_task_self(), address, sizeof(T),
+        reinterpret_cast<mach_vm_address_t>(&value), &copied) == KERN_SUCCESS && copied == sizeof(T);
+}
 
 void logLine(const char* format, ...) {
     if (!logFile) return;
@@ -67,6 +84,90 @@ void logLine(const char* format, ...) {
 [[noreturn]] void refuse(const char* reason) {
     logLine("bridge_refused reason=%s", reason);
     _exit(78);
+}
+
+// Logic's shared ARA interface precreates regions with its first track's
+// MDStream. ARA source access must still return the original two channels,
+// independent of that track's playback mode. Keep the normal decoder and
+// reader, changing only their mode query during this exact source read.
+// No stored track mode or region association is changed.
+void* stereoSourceStream(void* reader) {
+    const uintptr_t source = reinterpret_cast<uintptr_t>(reader);
+    uintptr_t vtable = 0, list = 0, entry = 0;
+    uint32_t channels = 0;
+    if (!readSelf(source, vtable) || vtable != reinterpret_cast<uintptr_t>(sourceVtable) ||
+        !readSelf(source + 0x64, channels) || channels != 2 ||
+        !readSelf(source + 0xb0, list) || !list || !readSelf(list + 0x20, entry)) return nullptr;
+    // Match ReadFrames' first usable region, including its null-region failure
+    // and CEntry::Next behavior. Bound corrupt/cyclic lists without dereferencing
+    // unverified memory. An unrecognized layout keeps the original behavior.
+    for (unsigned traversed = 0; entry && traversed < 4096; ++traversed) {
+        uintptr_t entryTable = 0, region = 0, file = 0, stream = 0, streamTable = 0;
+        if (!readSelf(entry, entryTable) || entryTable != reinterpret_cast<uintptr_t>(regionEntryVtable) ||
+            !readSelf(entry + 0x28, region) || !region || !readSelf(region + 0x40, file)) return nullptr;
+        if (file) {
+            if (!readSelf(region + 0xd8, stream) || !stream || !readSelf(stream, streamTable) ||
+                streamTable != reinterpret_cast<uintptr_t>(streamVtable)) return nullptr;
+            return reinterpret_cast<void*>(stream);
+        }
+        if (!readSelf(entry + 0x18, entry)) return nullptr;
+    }
+    return nullptr;
+}
+
+int32_t sourceReadStreamMode(void* stream) {
+    const int32_t mode = originalStreamMode(stream);
+    if (stream == stereoReaderStream && mode == 0) {
+        ++stereoReaderCorrections;
+        return 1; // Standard stereo, solely inside a two-channel source read.
+    }
+    return mode;
+}
+
+int32_t readNativeSourceSamples(void* host, void* reader, int64_t position,
+                                int64_t count, void* const* buffers) {
+    struct SourceReadScope {
+        void* previousStream = stereoReaderStream;
+        unsigned previousCorrections = stereoReaderCorrections;
+        explicit SourceReadScope(void* stream) { stereoReaderStream = stream; stereoReaderCorrections = 0; }
+        ~SourceReadScope() { stereoReaderStream = previousStream; stereoReaderCorrections = previousCorrections; }
+    };
+    void* const stream = stereoSourceStream(reader);
+    const int32_t storedModeBefore = stream ? originalStreamMode(stream) : -1;
+    int32_t result;
+    unsigned corrections;
+    {
+        SourceReadScope scope(stream);
+        result = originalReadSamples(host, reader, position, count, buffers);
+        corrections = stereoReaderCorrections;
+    }
+    if (corrections && stereoReaderLogCount.fetch_add(1, std::memory_order_relaxed) < 32) {
+        logLine("ara_stereo_source_read channels=2 position=%lld count=%lld status=%d mode_before=%d mode_after=%d scoped_mode_queries=%u",
+            static_cast<long long>(position), static_cast<long long>(count), result,
+            storedModeBefore, originalStreamMode(stream), corrections);
+    }
+    return result;
+}
+
+void replaceDataPointer(void** slot, void* expected, void* replacement) {
+    if (*slot != expected) refuse("compatibility_data_slot_mismatch");
+    mach_vm_address_t address = reinterpret_cast<mach_vm_address_t>(slot);
+    mach_vm_size_t regionSize = 0;
+    vm_region_basic_info_data_64_t regionInfo{};
+    mach_msg_type_number_t infoCount = VM_REGION_BASIC_INFO_COUNT_64;
+    mach_port_t objectName = MACH_PORT_NULL;
+    if (mach_vm_region(mach_task_self(), &address, &regionSize, VM_REGION_BASIC_INFO_64,
+            reinterpret_cast<vm_region_info_t>(&regionInfo), &infoCount, &objectName) != KERN_SUCCESS)
+        refuse("compatibility_data_region_unavailable");
+    if (objectName != MACH_PORT_NULL) mach_port_deallocate(mach_task_self(), objectName);
+    const mach_vm_address_t page = reinterpret_cast<uintptr_t>(slot) & ~(uintptr_t(getpagesize()) - 1);
+    if (mach_vm_protect(mach_task_self(), page, getpagesize(), false,
+            VM_PROT_READ | VM_PROT_WRITE | VM_PROT_COPY) != KERN_SUCCESS)
+        refuse("compatibility_data_not_writable");
+    __atomic_store_n(slot, replacement, __ATOMIC_RELEASE);
+    if (mach_vm_protect(mach_task_self(), page, getpagesize(), false, regionInfo.protection) != KERN_SUCCESS)
+        refuse("compatibility_data_protection_restore_failed");
+    if (*slot != replacement) refuse("compatibility_data_readback_failed");
 }
 
 NSString* canonicalPath(NSString* path) {
@@ -253,6 +354,18 @@ void setupNativeARA(void* object) {
                 *reinterpret_cast<uint32_t*>(bytes + 0x1e4), *reinterpret_cast<uint32_t*>(bytes + 0x1e8), factory != nullptr);
     }
     originalSetup(object);
+    if (selected && *reinterpret_cast<void**>(bytes + 0x30) != nullptr) {
+        // SetupSubClass builds this native interface table before creating the
+        // ARA document. Clients retain its pointer for subsequent source reads.
+        if (*reinterpret_cast<uint64_t*>(bytes + 0x48) != 32 ||
+            *reinterpret_cast<void**>(bytes + 0x160) != bytes + 0x48)
+            refuse("source_reader_interface_layout_mismatch");
+        auto** slot = reinterpret_cast<void**>(bytes + 0x58);
+        if (*slot == reinterpret_cast<void*>(originalReadSamples))
+            __atomic_store_n(slot, reinterpret_cast<void*>(readNativeSourceSamples), __ATOMIC_RELEASE);
+        else if (*slot != reinterpret_cast<void*>(readNativeSourceSamples))
+            refuse("source_reader_callback_mismatch");
+    }
     if (selected) logLine("ara_setup type=%08x subtype=%08x manufacturer=%08x document_present=%d", type,
                           *reinterpret_cast<uint32_t*>(bytes + 0x1e4), *reinterpret_cast<uint32_t*>(bytes + 0x1e8),
                           *reinterpret_cast<void**>(bytes + 0x30) != nullptr);
@@ -300,6 +413,34 @@ void installWrapper(NSString* enginePath, NSString* corePath) {
     if (mach_vm_protect(mach_task_self(), page, getpagesize(), false, regionInfo.protection) != KERN_SUCCESS)
         refuse("vtable_protection_restore_failed");
     if (table[14] != reinterpret_cast<void*>(setupNativeARA)) refuse("vtable_readback_failed");
+
+    {
+        auto** sourceTable = static_cast<void**>(dlsym(process, "_ZTV15ARA_AudioSource"));
+        auto** modeTable = static_cast<void**>(dlsym(process, "_ZTV8MDStream"));
+        originalReadSamples = reinterpret_cast<ReadSamplesFn>(dlsym(process,
+            "_ZN17ARA_HostInterface16ReadAudioSamplesEPN3ARA41ARAAudioAccessControllerHostRefMarkupTypeEPNS0_31ARAAudioReaderHostRefMarkupTypeExxPKPv"));
+        Dl_info engineInfo{};
+        if (!dladdr(reinterpret_cast<void*>(originalSetup), &engineInfo) || !engineInfo.dli_fbase)
+            refuse("stereo_reader_engine_base_unavailable");
+        const uintptr_t base = reinterpret_cast<uintptr_t>(engineInfo.dli_fbase);
+        sourceVtable = sourceTable ? sourceTable + 2 : nullptr;
+        streamVtable = modeTable ? modeTable + 2 : nullptr;
+        regionEntryVtable = reinterpret_cast<void*>(base + 0xe3dc28);
+        originalStreamMode = streamVtable ? reinterpret_cast<StreamModeFn>(streamVtable[20]) : nullptr;
+        bool stereoIdentities = checkedImage("ARA_AudioSource_vtable", sourceVtable, enginePath);
+        stereoIdentities &= checkedImage("MDStream_vtable", streamVtable, enginePath);
+        stereoIdentities &= checkedImage("ARA_region_entry_vtable", regionEntryVtable, enginePath);
+        stereoIdentities &= checkedImage("ReadAudioSamples", reinterpret_cast<void*>(originalReadSamples), enginePath);
+        stereoIdentities &= checkedImage("MDStream_GetMode", reinterpret_cast<void*>(originalStreamMode), enginePath);
+        if (!stereoIdentities || reinterpret_cast<uintptr_t>(sourceVtable) != base + 0xe35d50 ||
+            reinterpret_cast<uintptr_t>(streamVtable) != base + 0xe34f58 ||
+            reinterpret_cast<uintptr_t>(originalReadSamples) != base + 0x7b52a8 ||
+            reinterpret_cast<uintptr_t>(originalStreamMode) != base + 0x70f8ac)
+            refuse("stereo_reader_abi_mismatch");
+        replaceDataPointer(streamVtable + 20, reinterpret_cast<void*>(originalStreamMode),
+            reinterpret_cast<void*>(sourceReadStreamMode));
+        logLine("ara_stereo_reader_ready scope=two_channel_source_reads stored_track_modes=preserved");
+    }
 }
 
 void installProcessIsolation() {

@@ -1,0 +1,786 @@
+{
+  "schema": "logic-ara-launcher.public-stereo-qualification/1",
+  "date": "2026-10-23",
+  "release_status": "experimental-alpha",
+  "host": {
+    "product": "Logic Pro",
+    "version": "12.4",
+    "build": "6707",
+    "architecture": "arm64",
+    "engine_sha256": "f1ec685f407cd8a9ec73d3e94cdf3f7929bdcaa2168f221913c950bae76fec24",
+    "source_installation_unchanged_after_every_native_render": true
+  },
+  "plugin": {
+    "product": "RysUpPitch",
+    "candidate_source_commit": "367b626c932fa2aa65ace80ee2916aba0eb1c64a",
+    "candidate_executable_sha256": "8cc5fee8653c7b967fc766f0534d0e3bec643413eec3e3df4800f7eae18133f9",
+    "customer_release_claimed": false
+  },
+  "public_bridge_sha256": "807d63af12854339a8e788e6752c427e3651bc71f55201a710ff8faeac89ef32",
+  "sample_rate": 48000,
+  "mixed_mono_stereo": {
+    "pass": true,
+    "mono_tracks": 3,
+    "stereo_tracks": 1,
+    "regions": 8,
+    "edited_modifications": 8,
+    "first_source_mono_then_stereo_shared_stream_regression": true,
+    "raw_identity_pass_before_edit_and_both_cold_reopens": true,
+    "cold_processes_sample_identical": true,
+    "cold_full_mix_repeat": {
+      "identical_length_and_channels": true,
+      "sample_identical": true,
+      "first_frames": 458752,
+      "current_frames": 458752,
+      "maximum_absolute_difference": 0.0,
+      "rms_difference": 0.0
+    },
+    "exact_native_cold_recall": [
+      {
+        "phase": "cold-reopen-1",
+        "modifications": 8,
+        "all_note_ids_and_pitch_offsets_exact": true
+      },
+      {
+        "phase": "cold-reopen-2",
+        "modifications": 8,
+        "all_note_ids_and_pitch_offsets_exact": true
+      }
+    ],
+    "phases": [
+      {
+        "phase": "baseline",
+        "raw_host_source_fingerprints_match": true,
+        "source_modification_bindings": 8,
+        "tracks": [
+          {
+            "synthetic_track": "lead",
+            "note_components": 8,
+            "pass": true,
+            "maximum_absolute_pitch_error_cents": 1.9366367637396753e-05,
+            "stereo_channel_ratios": [
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0
+            ],
+            "old_pitch_rejection_ratios": []
+          },
+          {
+            "synthetic_track": "harmony",
+            "note_components": 6,
+            "pass": true,
+            "maximum_absolute_pitch_error_cents": 1.0768293941180027e-05,
+            "stereo_channel_ratios": [
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0
+            ],
+            "old_pitch_rejection_ratios": []
+          },
+          {
+            "synthetic_track": "bass",
+            "note_components": 8,
+            "pass": true,
+            "maximum_absolute_pitch_error_cents": 3.515965098353497e-05,
+            "stereo_channel_ratios": [
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0
+            ],
+            "old_pitch_rejection_ratios": []
+          },
+          {
+            "synthetic_track": "stereo",
+            "note_components": 2,
+            "pass": true,
+            "maximum_absolute_pitch_error_cents": 7.79690508935985e-06,
+            "stereo_channel_ratios": [
+              0.6699218385472908,
+              0.6699196818883323
+            ],
+            "old_pitch_rejection_ratios": []
+          }
+        ],
+        "mix_sum": {
+          "pass": true,
+          "maximum_absolute_residual": 0.0,
+          "rms_residual": 0.0,
+          "pcm_quantization_bound": 5.960464477539062e-07,
+          "gain_or_delay_fit": false
+        }
+      },
+      {
+        "phase": "cold-reopen-1",
+        "raw_host_source_fingerprints_match": true,
+        "source_modification_bindings": 8,
+        "tracks": [
+          {
+            "synthetic_track": "lead",
+            "note_components": 8,
+            "pass": true,
+            "maximum_absolute_pitch_error_cents": 0.5323786641301801,
+            "stereo_channel_ratios": [
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0
+            ],
+            "old_pitch_rejection_ratios": [
+              0.0024490043136637593,
+              0.002542535387558752
+            ]
+          },
+          {
+            "synthetic_track": "harmony",
+            "note_components": 6,
+            "pass": true,
+            "maximum_absolute_pitch_error_cents": 0.9215013281852412,
+            "stereo_channel_ratios": [
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0
+            ],
+            "old_pitch_rejection_ratios": [
+              0.002839554190069351,
+              0.002605085314048869,
+              0.0032021324506491806
+            ]
+          },
+          {
+            "synthetic_track": "bass",
+            "note_components": 8,
+            "pass": true,
+            "maximum_absolute_pitch_error_cents": 0.03360629663675726,
+            "stereo_channel_ratios": [
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0
+            ],
+            "old_pitch_rejection_ratios": [
+              0.0035979226999620145,
+              0.00020882569676313728
+            ]
+          },
+          {
+            "synthetic_track": "stereo",
+            "note_components": 2,
+            "pass": true,
+            "maximum_absolute_pitch_error_cents": 0.08052119965119485,
+            "stereo_channel_ratios": [
+              0.6699202838688363,
+              0.6699202769720064
+            ],
+            "old_pitch_rejection_ratios": [
+              0.0008046354540874154
+            ]
+          }
+        ],
+        "mix_sum": {
+          "pass": true,
+          "maximum_absolute_residual": 3.5762786865234375e-07,
+          "rms_residual": 5.796100304910756e-08,
+          "pcm_quantization_bound": 5.960464477539062e-07,
+          "gain_or_delay_fit": false
+        }
+      },
+      {
+        "phase": "cold-reopen-2",
+        "raw_host_source_fingerprints_match": true,
+        "source_modification_bindings": 8,
+        "tracks": [
+          {
+            "synthetic_track": "lead",
+            "note_components": 8,
+            "pass": true,
+            "maximum_absolute_pitch_error_cents": 0.5323786641301801,
+            "stereo_channel_ratios": [
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0
+            ],
+            "old_pitch_rejection_ratios": [
+              0.0024490043136637593,
+              0.002542535387558752
+            ]
+          },
+          {
+            "synthetic_track": "harmony",
+            "note_components": 6,
+            "pass": true,
+            "maximum_absolute_pitch_error_cents": 0.9215013281852412,
+            "stereo_channel_ratios": [
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0
+            ],
+            "old_pitch_rejection_ratios": [
+              0.002839554190069351,
+              0.002605085314048869,
+              0.0032021324506491806
+            ]
+          },
+          {
+            "synthetic_track": "bass",
+            "note_components": 8,
+            "pass": true,
+            "maximum_absolute_pitch_error_cents": 0.03360629663675726,
+            "stereo_channel_ratios": [
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0
+            ],
+            "old_pitch_rejection_ratios": [
+              0.0035979226999620145,
+              0.00020882569676313728
+            ]
+          },
+          {
+            "synthetic_track": "stereo",
+            "note_components": 2,
+            "pass": true,
+            "maximum_absolute_pitch_error_cents": 0.08052119965119485,
+            "stereo_channel_ratios": [
+              0.6699202838688363,
+              0.6699202769720064
+            ],
+            "old_pitch_rejection_ratios": [
+              0.0008046354540874154
+            ]
+          }
+        ],
+        "mix_sum": {
+          "pass": true,
+          "maximum_absolute_residual": 3.5762786865234375e-07,
+          "rms_residual": 5.796100304910756e-08,
+          "pcm_quantization_bound": 5.960464477539062e-07,
+          "gain_or_delay_fit": false
+        }
+      }
+    ]
+  },
+  "six_stereo_cases": {
+    "pass": true,
+    "stereo_tracks": 6,
+    "regions": 12,
+    "edited_modifications": 12,
+    "sample_rate": 48000,
+    "edit_policy": "A shared note/time document applies the same relative cents program to each channel own original pitch and content.",
+    "first_full_region_note_edit_semitones": 1,
+    "first_trimmed_clone_visible_note_edit_semitones": -2,
+    "raw_identity_pass_before_edit_and_both_cold_reopens": true,
+    "raw_sources": [
+      {
+        "case": "proportional",
+        "ordered_channel_fingerprint": "b0b2389b5e2f6da3cf2f6dc2b052b768b59014de2e90d9680ca4c36a4f181cf0",
+        "canonical_mean_fingerprint": "23c7f959887f34fa5ea4e195e5fc1309d00985869b758a69a3efb2d81b4586fb"
+      },
+      {
+        "case": "independent",
+        "ordered_channel_fingerprint": "670fe54054ad5b193d5ddfe2cd8e09c31990014849b421aa0b13a7638938d231",
+        "canonical_mean_fingerprint": "4554cb8c93e0b155e339d1a59c4341a44f2a4f6390fc41d757e67b8bedb0c80a"
+      },
+      {
+        "case": "antiphase",
+        "ordered_channel_fingerprint": "4581fa3ad910f2e56248d15a176da1f8e3c09da0bbad0a982891f645100f4461",
+        "canonical_mean_fingerprint": "3ed784634e1ddbb6cc7856accff7f531635385e426e701fc87ef3be280220254"
+      },
+      {
+        "case": "rightonly",
+        "ordered_channel_fingerprint": "2a1937c30df8f1dc14b758ceb8dd0bb3d84d11eb696cb8eb5c0f68086b4e2875",
+        "canonical_mean_fingerprint": "ed34d09a6563cd50cfea331e1675d14b77037425d43f9d4a27a5f3c59d6fd14c"
+      },
+      {
+        "case": "leftonly",
+        "ordered_channel_fingerprint": "131c81957fc9fbc9f1407e475d997d881de1ea6ffb7882d472321c13396a8b18",
+        "canonical_mean_fingerprint": "af7a953c746886e979a0c5bd63f70f74367d39294940948cbfacd7f549fdb0f1"
+      },
+      {
+        "case": "quadrature",
+        "ordered_channel_fingerprint": "1d198fc2524c50263d09c1c4902f9aad7e488f8b7b8e67b6f7fd47d32436a8d1",
+        "canonical_mean_fingerprint": "757f0347c16fa7517503c21d231e5523d52ad4d99cd1228bc55cf4983580a632"
+      }
+    ],
+    "phases": [
+      {
+        "phase": "baseline",
+        "raw_host_source_fingerprints_match": true,
+        "source_modification_bindings": 12,
+        "actual_note_ids_and_offsets_match_expected_document": true,
+        "actual_note_count": 48,
+        "cases": [
+          {
+            "case": "proportional",
+            "pass": true,
+            "channel_note_components": 12,
+            "maximum_absolute_pitch_error_cents": 3.214023487744153e-05,
+            "maximum_old_pitch_ratio": 0,
+            "maximum_other_channel_content_ratio": 0,
+            "silent_channel_windows": 0,
+            "silent_channel_maximum_sample": 0,
+            "phase_gain_checks": 6,
+            "maximum_phase_error_radians": 1.2853155472175464e-06,
+            "maximum_channel_ratio_magnitude_error": 5.613750373889559e-06,
+            "unedited_waveform": {
+              "max_absolute_error": 0.0,
+              "rms_error": 0.0,
+              "quantization_bound": 9.167194366455078e-05,
+              "gain_fit_applied": false,
+              "delay_fit_applied": false,
+              "pass": true
+            }
+          },
+          {
+            "case": "independent",
+            "pass": true,
+            "channel_note_components": 12,
+            "maximum_absolute_pitch_error_cents": 2.3526322675090503e-05,
+            "maximum_old_pitch_ratio": 0,
+            "maximum_other_channel_content_ratio": 5.273570481343117e-06,
+            "silent_channel_windows": 0,
+            "silent_channel_maximum_sample": 0,
+            "phase_gain_checks": 0,
+            "maximum_phase_error_radians": 0,
+            "maximum_channel_ratio_magnitude_error": 0,
+            "unedited_waveform": {
+              "max_absolute_error": 0.0,
+              "rms_error": 0.0,
+              "quantization_bound": 9.167194366455078e-05,
+              "gain_fit_applied": false,
+              "delay_fit_applied": false,
+              "pass": true
+            }
+          },
+          {
+            "case": "antiphase",
+            "pass": true,
+            "channel_note_components": 12,
+            "maximum_absolute_pitch_error_cents": 2.3526322675090503e-05,
+            "maximum_old_pitch_ratio": 0,
+            "maximum_other_channel_content_ratio": 0,
+            "silent_channel_windows": 0,
+            "silent_channel_maximum_sample": 0,
+            "phase_gain_checks": 6,
+            "maximum_phase_error_radians": 3.4015903863682647e-17,
+            "maximum_channel_ratio_magnitude_error": 0.0,
+            "unedited_waveform": {
+              "max_absolute_error": 0.0,
+              "rms_error": 0.0,
+              "quantization_bound": 9.167194366455078e-05,
+              "gain_fit_applied": false,
+              "delay_fit_applied": false,
+              "pass": true
+            }
+          },
+          {
+            "case": "rightonly",
+            "pass": true,
+            "channel_note_components": 6,
+            "maximum_absolute_pitch_error_cents": 6.997699256566952e-06,
+            "maximum_old_pitch_ratio": 0,
+            "maximum_other_channel_content_ratio": 0,
+            "silent_channel_windows": 6,
+            "silent_channel_maximum_sample": 0.0,
+            "phase_gain_checks": 0,
+            "maximum_phase_error_radians": 0,
+            "maximum_channel_ratio_magnitude_error": 0,
+            "unedited_waveform": {
+              "max_absolute_error": 0.0,
+              "rms_error": 0.0,
+              "quantization_bound": 9.167194366455078e-05,
+              "gain_fit_applied": false,
+              "delay_fit_applied": false,
+              "pass": true
+            }
+          },
+          {
+            "case": "leftonly",
+            "pass": true,
+            "channel_note_components": 6,
+            "maximum_absolute_pitch_error_cents": 2.3526322675090503e-05,
+            "maximum_old_pitch_ratio": 0,
+            "maximum_other_channel_content_ratio": 0,
+            "silent_channel_windows": 6,
+            "silent_channel_maximum_sample": 0.0,
+            "phase_gain_checks": 0,
+            "maximum_phase_error_radians": 0,
+            "maximum_channel_ratio_magnitude_error": 0,
+            "unedited_waveform": {
+              "max_absolute_error": 0.0,
+              "rms_error": 0.0,
+              "quantization_bound": 9.167194366455078e-05,
+              "gain_fit_applied": false,
+              "delay_fit_applied": false,
+              "pass": true
+            }
+          },
+          {
+            "case": "quadrature",
+            "pass": true,
+            "channel_note_components": 12,
+            "maximum_absolute_pitch_error_cents": 2.3526322675090503e-05,
+            "maximum_old_pitch_ratio": 0,
+            "maximum_other_channel_content_ratio": 0,
+            "silent_channel_windows": 0,
+            "silent_channel_maximum_sample": 0,
+            "phase_gain_checks": 6,
+            "maximum_phase_error_radians": 1.628746581429466e-06,
+            "maximum_channel_ratio_magnitude_error": 4.345083908230407e-06,
+            "unedited_waveform": {
+              "max_absolute_error": 0.0,
+              "rms_error": 0.0,
+              "quantization_bound": 9.167194366455078e-05,
+              "gain_fit_applied": false,
+              "delay_fit_applied": false,
+              "pass": true
+            }
+          }
+        ],
+        "mix_sum": {
+          "pass": true,
+          "stem_count": 6,
+          "maximum_absolute_residual": 0.0,
+          "rms_residual": 0.0,
+          "pcm_quantization_bound": 8.344650268554688e-07,
+          "gain_or_delay_fit": false
+        }
+      },
+      {
+        "phase": "cold-1",
+        "raw_host_source_fingerprints_match": true,
+        "source_modification_bindings": 12,
+        "actual_note_ids_and_offsets_match_expected_document": true,
+        "actual_note_count": 48,
+        "cases": [
+          {
+            "case": "proportional",
+            "pass": true,
+            "channel_note_components": 12,
+            "maximum_absolute_pitch_error_cents": 0.5991158510734641,
+            "maximum_old_pitch_ratio": 0.0027631805563057173,
+            "maximum_other_channel_content_ratio": 0,
+            "silent_channel_windows": 0,
+            "silent_channel_maximum_sample": 0,
+            "phase_gain_checks": 6,
+            "maximum_phase_error_radians": 1.2853155472175464e-06,
+            "maximum_channel_ratio_magnitude_error": 3.84675566362791e-05,
+            "unedited_waveform": null
+          },
+          {
+            "case": "independent",
+            "pass": true,
+            "channel_note_components": 12,
+            "maximum_absolute_pitch_error_cents": 0.5991021585308414,
+            "maximum_old_pitch_ratio": 0.002763037926378087,
+            "maximum_other_channel_content_ratio": 5.383349207762181e-05,
+            "silent_channel_windows": 0,
+            "silent_channel_maximum_sample": 0,
+            "phase_gain_checks": 0,
+            "maximum_phase_error_radians": 0,
+            "maximum_channel_ratio_magnitude_error": 0,
+            "unedited_waveform": null
+          },
+          {
+            "case": "antiphase",
+            "pass": true,
+            "channel_note_components": 12,
+            "maximum_absolute_pitch_error_cents": 0.5991021585308414,
+            "maximum_old_pitch_ratio": 0.002763037926378087,
+            "maximum_other_channel_content_ratio": 0,
+            "silent_channel_windows": 0,
+            "silent_channel_maximum_sample": 0,
+            "phase_gain_checks": 6,
+            "maximum_phase_error_radians": 4.399350153972186e-09,
+            "maximum_channel_ratio_magnitude_error": 6.33042485098656e-09,
+            "unedited_waveform": null
+          },
+          {
+            "case": "rightonly",
+            "pass": true,
+            "channel_note_components": 6,
+            "maximum_absolute_pitch_error_cents": 0.40617229746999345,
+            "maximum_old_pitch_ratio": 0.0019221450692977658,
+            "maximum_other_channel_content_ratio": 0,
+            "silent_channel_windows": 6,
+            "silent_channel_maximum_sample": 0.0,
+            "phase_gain_checks": 0,
+            "maximum_phase_error_radians": 0,
+            "maximum_channel_ratio_magnitude_error": 0,
+            "unedited_waveform": null
+          },
+          {
+            "case": "leftonly",
+            "pass": true,
+            "channel_note_components": 6,
+            "maximum_absolute_pitch_error_cents": 0.5991021585308414,
+            "maximum_old_pitch_ratio": 0.002763037926378087,
+            "maximum_other_channel_content_ratio": 0,
+            "silent_channel_windows": 6,
+            "silent_channel_maximum_sample": 0.0,
+            "phase_gain_checks": 0,
+            "maximum_phase_error_radians": 0,
+            "maximum_channel_ratio_magnitude_error": 0,
+            "unedited_waveform": null
+          },
+          {
+            "case": "quadrature",
+            "pass": true,
+            "channel_note_components": 12,
+            "maximum_absolute_pitch_error_cents": 0.5991021585308414,
+            "maximum_old_pitch_ratio": 0.002763037926378087,
+            "maximum_other_channel_content_ratio": 0,
+            "silent_channel_windows": 0,
+            "silent_channel_maximum_sample": 0,
+            "phase_gain_checks": 6,
+            "maximum_phase_error_radians": 0.0011645065289437387,
+            "maximum_channel_ratio_magnitude_error": 0.00012726988033073816,
+            "unedited_waveform": null
+          }
+        ],
+        "mix_sum": {
+          "pass": true,
+          "stem_count": 6,
+          "maximum_absolute_residual": 4.76837158203125e-07,
+          "rms_residual": 1.586715810853079e-07,
+          "pcm_quantization_bound": 8.344650268554688e-07,
+          "gain_or_delay_fit": false
+        }
+      },
+      {
+        "phase": "cold-2",
+        "raw_host_source_fingerprints_match": true,
+        "source_modification_bindings": 12,
+        "actual_note_ids_and_offsets_match_expected_document": true,
+        "actual_note_count": 48,
+        "cases": [
+          {
+            "case": "proportional",
+            "pass": true,
+            "channel_note_components": 12,
+            "maximum_absolute_pitch_error_cents": 0.5991158510734641,
+            "maximum_old_pitch_ratio": 0.0027631805563057173,
+            "maximum_other_channel_content_ratio": 0,
+            "silent_channel_windows": 0,
+            "silent_channel_maximum_sample": 0,
+            "phase_gain_checks": 6,
+            "maximum_phase_error_radians": 1.2853155472175464e-06,
+            "maximum_channel_ratio_magnitude_error": 3.84675566362791e-05,
+            "unedited_waveform": null
+          },
+          {
+            "case": "independent",
+            "pass": true,
+            "channel_note_components": 12,
+            "maximum_absolute_pitch_error_cents": 0.5991021585308414,
+            "maximum_old_pitch_ratio": 0.002763037926378087,
+            "maximum_other_channel_content_ratio": 5.383349207762181e-05,
+            "silent_channel_windows": 0,
+            "silent_channel_maximum_sample": 0,
+            "phase_gain_checks": 0,
+            "maximum_phase_error_radians": 0,
+            "maximum_channel_ratio_magnitude_error": 0,
+            "unedited_waveform": null
+          },
+          {
+            "case": "antiphase",
+            "pass": true,
+            "channel_note_components": 12,
+            "maximum_absolute_pitch_error_cents": 0.5991021585308414,
+            "maximum_old_pitch_ratio": 0.002763037926378087,
+            "maximum_other_channel_content_ratio": 0,
+            "silent_channel_windows": 0,
+            "silent_channel_maximum_sample": 0,
+            "phase_gain_checks": 6,
+            "maximum_phase_error_radians": 4.399350153972186e-09,
+            "maximum_channel_ratio_magnitude_error": 6.33042485098656e-09,
+            "unedited_waveform": null
+          },
+          {
+            "case": "rightonly",
+            "pass": true,
+            "channel_note_components": 6,
+            "maximum_absolute_pitch_error_cents": 0.40617229746999345,
+            "maximum_old_pitch_ratio": 0.0019221450692977658,
+            "maximum_other_channel_content_ratio": 0,
+            "silent_channel_windows": 6,
+            "silent_channel_maximum_sample": 0.0,
+            "phase_gain_checks": 0,
+            "maximum_phase_error_radians": 0,
+            "maximum_channel_ratio_magnitude_error": 0,
+            "unedited_waveform": null
+          },
+          {
+            "case": "leftonly",
+            "pass": true,
+            "channel_note_components": 6,
+            "maximum_absolute_pitch_error_cents": 0.5991021585308414,
+            "maximum_old_pitch_ratio": 0.002763037926378087,
+            "maximum_other_channel_content_ratio": 0,
+            "silent_channel_windows": 6,
+            "silent_channel_maximum_sample": 0.0,
+            "phase_gain_checks": 0,
+            "maximum_phase_error_radians": 0,
+            "maximum_channel_ratio_magnitude_error": 0,
+            "unedited_waveform": null
+          },
+          {
+            "case": "quadrature",
+            "pass": true,
+            "channel_note_components": 12,
+            "maximum_absolute_pitch_error_cents": 0.5991021585308414,
+            "maximum_old_pitch_ratio": 0.002763037926378087,
+            "maximum_other_channel_content_ratio": 0,
+            "silent_channel_windows": 0,
+            "silent_channel_maximum_sample": 0,
+            "phase_gain_checks": 6,
+            "maximum_phase_error_radians": 0.0011645065289437387,
+            "maximum_channel_ratio_magnitude_error": 0.00012726988033073816,
+            "unedited_waveform": null
+          }
+        ],
+        "mix_sum": {
+          "pass": true,
+          "stem_count": 6,
+          "maximum_absolute_residual": 4.76837158203125e-07,
+          "rms_residual": 1.586715810853079e-07,
+          "pcm_quantization_bound": 8.344650268554688e-07,
+          "gain_or_delay_fit": false
+        }
+      }
+    ],
+    "cold_repeat": {
+      "all_sample_identical": true,
+      "outputs": [
+        {
+          "name": "mix",
+          "sample_identical": true,
+          "frames_first": 327680,
+          "frames_second": 327680,
+          "maximum_absolute_difference": 0.0,
+          "rms_difference": 0.0
+        },
+        {
+          "name": "ST antiphase",
+          "sample_identical": true,
+          "frames_first": 327680,
+          "frames_second": 327680,
+          "maximum_absolute_difference": 0.0,
+          "rms_difference": 0.0
+        },
+        {
+          "name": "ST independent",
+          "sample_identical": true,
+          "frames_first": 327680,
+          "frames_second": 327680,
+          "maximum_absolute_difference": 0.0,
+          "rms_difference": 0.0
+        },
+        {
+          "name": "ST leftonly",
+          "sample_identical": true,
+          "frames_first": 327680,
+          "frames_second": 327680,
+          "maximum_absolute_difference": 0.0,
+          "rms_difference": 0.0
+        },
+        {
+          "name": "ST proportional",
+          "sample_identical": true,
+          "frames_first": 327680,
+          "frames_second": 327680,
+          "maximum_absolute_difference": 0.0,
+          "rms_difference": 0.0
+        },
+        {
+          "name": "ST quadrature",
+          "sample_identical": true,
+          "frames_first": 327680,
+          "frames_second": 327680,
+          "maximum_absolute_difference": 0.0,
+          "rms_difference": 0.0
+        },
+        {
+          "name": "ST rightonly",
+          "sample_identical": true,
+          "frames_first": 327680,
+          "frames_second": 327680,
+          "maximum_absolute_difference": 0.0,
+          "rms_difference": 0.0
+        }
+      ]
+    }
+  },
+  "preserved_rejected_phase_control": {
+    "case": "quadrature trimmed clone, second source note, -2 semitones",
+    "qualification_pass": false,
+    "acceptance_limit_absolute_phase_error_radians": 0.04,
+    "acceptance_limit_unchanged_for_corrected_qualification": true,
+    "two_cold_processes_sample_identical": true,
+    "observations": [
+      {
+        "cold_process": 1,
+        "phase_error_radians": -0.078613213917304,
+        "measured_right_left_complex_ratio": [
+          0.047128233938052544,
+          0.5982595904974457
+        ],
+        "channel_ratio_magnitude_error": 0.00011299607348214114
+      },
+      {
+        "cold_process": 2,
+        "phase_error_radians": -0.078613213917304,
+        "measured_right_left_complex_ratio": [
+          0.047128233938052544,
+          0.5982595904974457
+        ],
+        "channel_ratio_magnitude_error": 0.00011299607348214114
+      }
+    ],
+    "purpose": "The deterministic phase defect was rejected before the coherent-channel pitchmark timing correction; this failed control is not counted as a passing run."
+  },
+  "stereo_qualification_pass": true,
+  "general_arbitrary_ara_plugin_compatibility_claimed": false,
+  "limitations": [
+    "Qualification covers these synthetic sources, note edits, save/recall and exact host/plugin builds.",
+    "No licensed Melodyne editing test or arbitrary third-party ARA plugin qualification is claimed.",
+    "This does not establish broad customer-session stability or every stereo algorithm, edit type, sample rate or DAW."
+  ],
+  "privacy": "Allow-listed numerical proof only. No local paths, process IDs, customer audio, Apple binaries, private helper source or private test code."
+}

@@ -18,6 +18,22 @@ validation functions, fills the missing discovery state, then invokes Logic's
 original setup. AUv3 behavior is preserved. No archive IDs are substituted and
 no editor view is redirected to an unrelated processor.
 
+This host's shared ARA interface can precreate audio regions with the first
+track's stream. Later parent-track changes leave that reader stream unchanged.
+With a mono first track, the native decoder consequently averages stereo L/R
+into its left buffer while retaining the original right buffer. A stereo parent
+track and a two-channel AU do not correct this source-reader association.
+
+The bridge wraps the native ARA source-read callback and the concrete stream's
+mode getter through process-local dispatch data. An exact, verified two-channel
+source read establishes a thread-local scope for its selected reader stream.
+Only inside that scope, a mono mode query returns standard stereo. Logic's own
+reader and decoder still supply every sample. Stored track modes, region links,
+mono sources and ordinary playback remain unchanged. Nested reads restore their
+previous scope, including during exception unwinding. The helper verifies both
+framework hashes, original callback/getter addresses and expected vtables before
+installing these wrappers; a missing ARA document leaves its callback untouched.
+
 No signed file or Apple instruction bytes are modified. A private writable copy of
 the process's vtable page supplies the wrapper. Preference APIs are redirected to
 the launcher's domain, normal saved-state reopening is disabled and the injection

@@ -6,12 +6,14 @@ a process-local bridge. The installed application is read and verified, never
 patched or re-signed. Unknown builds are refused.
 
 **Experimental alpha.** Admission is limited to one exact Logic build. Native
-mono ARA source acquisition, independent edits and native saving have been tested
-with a development build of RysUpPitch. Two independent cold processes restored
-all saved edits and produced identical audio samples for three mono tracks and
-seven regions. **Stereo is not qualified:** this Logic host path can deliver
-`[mean(L,R), R]` through ARA despite a stereo source and stereo AU configuration.
-Do not use this alpha for stereo ARA work.
+mono and stereo ARA source acquisition, independent region edits and native
+saving have been tested with a development build of RysUpPitch. The stereo test
+covers six tracks and twelve regions: independent left/right melodies,
+proportional channels, anti-phase, left-only, right-only and quadrature audio.
+Two independent cold processes restored all 48 saved note identities/offsets
+and produced sample-identical mixes and all six stems. These are bounded
+synthetic-audio checks; other plug-ins and general customer sessions remain
+unqualified.
 
 The RysUpPitch tests use unreleased compatibility fixes. The installed/released
 RysUpPitch 1.1.8 has separate editor and archive compatibility issues; this launcher

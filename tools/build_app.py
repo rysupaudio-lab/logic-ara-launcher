@@ -26,6 +26,6 @@ with (app / "Contents/Info.plist").open("wb") as stream:
     plistlib.dump({"CFBundleIdentifier": "org.rysupaudio.logic-ara-launcher",
                    "CFBundleName": "Logic ARA Launcher", "CFBundleExecutable": entry.name,
                    "CFBundlePackageType": "APPL", "CFBundleShortVersionString": "0.1.0",
-                   "CFBundleVersion": "1", "LSMinimumSystemVersion": "15.4",
+                   "CFBundleVersion": "2", "LSMinimumSystemVersion": "15.4",
                    "NSHighResolutionCapable": True}, stream)
 print(app)
