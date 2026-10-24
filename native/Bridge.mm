@@ -17,6 +17,7 @@
 #include <dlfcn.h>
 #include <pthread.h>
 #include <atomic>
+#include <array>
 #include <cerrno>
 #include <cstdarg>
 #include <cstdio>
@@ -757,12 +758,75 @@ void installWrapper(NSString* enginePath, NSString* corePath) {
     }
 }
 
+void installPrivatePreferenceArguments() {
+    // AppKit's native _createPanel: mode-zero factory consults this existing
+    // config key through _NSGetBoolAppConfig. Keep open/save panels local so
+    // their navigation preferences use this process's isolated defaults,
+    // rather than the XPC panel service masquerading as the original bundle.
+    // The launcher also passes the same argument before framework startup to
+    // cover an AppKit config cache initialized before this constructor.
+    [isolatedDefaults setVolatileDomain:@{@"ApplePersistenceIgnoreState": @YES, @"NSQuitAlwaysKeepsWindows": @NO,
+                                       @"NSUseRemoteSavePanel": @NO}
+                              forName:NSArgumentDomain];
+}
+
+using RemotePanelConfigFn = bool (*)();
+RemotePanelConfigFn nativeRemotePanelConfig() {
+    // In this AppKit ABI, +_createPanel: mode 0 calls NSUseRemoteSavePanel;
+    // false selects the existing NSLocalOpenPanel/NSLocalSavePanel route.
+    // Read only the factory's bounded call window; never call the factory or
+    // patch its dispatch, bundle identity, security token or native code.
+    Method factory = class_getClassMethod(NSClassFromString(@"NSSavePanel"), sel_registerName("_createPanel:"));
+    Dl_info factoryImage{};
+    if (!factory || strcmp(method_getTypeEncoding(factory), "@20@0:8i16") != 0 ||
+        !dladdr(reinterpret_cast<void*>(method_getImplementation(factory)), &factoryImage) || !factoryImage.dli_fname ||
+        strcmp(factoryImage.dli_fname, "/System/Library/Frameworks/AppKit.framework/Versions/C/AppKit") != 0)
+        return nullptr;
+    RemotePanelConfigFn result = nullptr;
+    const uintptr_t begin = reinterpret_cast<uintptr_t>(method_getImplementation(factory));
+    std::array<uint32_t, 0x180 / sizeof(uint32_t)> instructions{};
+    if (!readSelf(begin, instructions)) return nullptr;
+    // This window includes the proven mode-zero false branch and native local
+    // class selection. A future AppKit layout must be reviewed, not inferred
+    // from the private selector/function names alone.
+    unsigned char digest[CC_SHA256_DIGEST_LENGTH];
+    CC_SHA256(instructions.data(), sizeof(instructions), digest);
+    char hex[CC_SHA256_DIGEST_LENGTH * 2 + 1];
+    for (size_t i = 0; i < sizeof(digest); ++i) snprintf(hex + i * 2, 3, "%02x", digest[i]);
+    if (strcmp(hex, "487faa2a1d6b1c576b3fd8e09d52b89de34f4e2cbe518dc1a604c3d6ac784958") != 0) return nullptr;
+    for (uintptr_t offset = 0; offset < sizeof(instructions); offset += 4) {
+        const uint32_t instruction = instructions[offset / 4];
+        if ((instruction & 0xfc000000) != 0x94000000) continue; // AArch64 BL
+        int64_t displacement = instruction & 0x03ffffff;
+        if (displacement & 0x02000000) displacement -= 0x04000000;
+        const uintptr_t target = static_cast<uintptr_t>(static_cast<int64_t>(begin + offset) + displacement * 4);
+        Dl_info targetImage{};
+        if (!dladdr(reinterpret_cast<void*>(target), &targetImage) || !targetImage.dli_sname ||
+            strcmp(targetImage.dli_sname, "NSUseRemoteSavePanel") != 0) continue;
+        if (targetImage.dli_saddr != reinterpret_cast<void*>(target) || !targetImage.dli_fname ||
+            strcmp(targetImage.dli_fname, factoryImage.dli_fname) != 0) return nullptr;
+        auto function = reinterpret_cast<RemotePanelConfigFn>(target);
+        if (result && result != function) return nullptr;
+        result = function;
+    }
+    return result;
+}
+bool verifyNativeLocalPanelConfig() {
+    // The known present private argument avoids the native default-value
+    // function. This getter only reads/caches config; it creates no panel/app.
+    id requested = [isolatedDefaults objectForKey:@"NSUseRemoteSavePanel"];
+    if (![requested isKindOfClass:[NSNumber class]] || [requested boolValue]) return false;
+    RemotePanelConfigFn config = nativeRemotePanelConfig();
+    if (!config || config()) return false;
+    logLine("panel_preferences_route_ready remote=0 native_gate=NSUseRemoteSavePanel factory_mode=0 local_mode=1 panel_created=0");
+    return true;
+}
+
 void installProcessIsolation() {
     capturedStandardDefaults = [NSUserDefaults standardUserDefaults];
     isolatedDefaults = [[NSUserDefaults alloc] initWithSuiteName:(__bridge NSString*)preferenceDomain];
     if (!isolatedDefaults) refuse("preferences_suite_unavailable");
-    [isolatedDefaults setVolatileDomain:@{@"ApplePersistenceIgnoreState": @YES, @"NSQuitAlwaysKeepsWindows": @NO}
-                              forName:NSArgumentDomain];
+    installPrivatePreferenceArguments();
     Method defaults = class_getClassMethod([NSUserDefaults class], @selector(standardUserDefaults));
     Method applications = class_getInstanceMethod([NSWorkspace class], @selector(runningApplications));
     Method byID = class_getClassMethod([NSRunningApplication class], @selector(runningApplicationsWithBundleIdentifier:));
@@ -770,6 +834,7 @@ void installProcessIsolation() {
     installCorePreferencesIsolation();
     installDefaultsInstanceIsolation();
     method_setImplementation(defaults, reinterpret_cast<IMP>(standardDefaults));
+    if (!verifyNativeLocalPanelConfig()) refuse("native_local_panel_configuration_unqualified");
     originalRunningApplications = reinterpret_cast<NSArray*(*)(id, SEL)>(method_setImplementation(applications, reinterpret_cast<IMP>(runningApplications)));
     originalRunningApplicationsForID = reinterpret_cast<NSArray*(*)(id, SEL, NSString*)>(method_setImplementation(byID, reinterpret_cast<IMP>(runningApplicationsForID)));
 }
