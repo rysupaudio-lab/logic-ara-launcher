@@ -242,7 +242,7 @@ final class LauncherDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate 
     func start(_ project: URL?) {
         guard fm.fileExists(atPath: source.path) else { chooseLogic(); return }
         let session = Session(cache: defaultCache(), helper: bundledHelper()); self.session = session
-        session.changed = { text in DispatchQueue.main.async { self.status.stringValue = text } }
+        session.changed = { [weak self] text in DispatchQueue.main.async { self?.status.stringValue = text } }
         work { try session.launch(source: self.source, project: project); return self.statusText() }
     }
     func statusText() -> String { "Logic exited. Private copy removed and original installation verified unchanged. Diagnostics: \(defaultCache().path)." }
@@ -257,7 +257,8 @@ final class LauncherDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate 
 }
 var args = Array(CommandLine.arguments.dropFirst())
 if args.isEmpty || args == ["--gui"] {
-    let app = NSApplication.shared; let delegate = LauncherDelegate(); app.delegate = delegate; app.setActivationPolicy(.regular); app.run()
+    let app = NSApplication.shared; let delegate = LauncherDelegate(); app.delegate = delegate; app.setActivationPolicy(.regular)
+    withExtendedLifetime(delegate) { app.run() }
 } else {
     do {
         var source = URL(fileURLWithPath: "/Applications/Logic Pro.app"), project: URL?, cache = defaultCache(); var check = false, cleanup = false
