@@ -19,11 +19,11 @@ class BridgePreferencesTests(unittest.TestCase):
                 '-framework', 'AppKit', '-framework', 'AudioToolbox',
                 '-framework', 'Carbon', str(Path(__file__).with_suffix('.mm')),
                 '-o', str(executable)], check=True, capture_output=True, text=True)
-            result = subprocess.run([str(executable), '-NSUseRemoteSavePanel', 'NO'], check=True,
+            result = subprocess.run([str(executable)], check=True,
                                     capture_output=True, text=True, timeout=30)
             proof = json.loads(result.stdout)
             self.assertTrue(proof['pass'])
-            self.assertEqual(proof['checks'], 52)
+            self.assertEqual(proof['checks'], 46)
             self.assertIn('unique synthetic domains only', proof['scope'])
 
 

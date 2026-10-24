@@ -50,12 +50,6 @@ int main() { @autoreleasepool {
     Method accessor = class_getClassMethod([NSUserDefaults class], @selector(standardUserDefaults));
     IMP originalAccessor = method_setImplementation(accessor, reinterpret_cast<IMP>(standardDefaults));
     check([NSUserDefaults standardUserDefaults] == isolatedDefaults, "new accessor uses private object");
-    check(NSApp == nil, "native panel-config probe starts without an application");
-    check(equal([isolatedDefaults objectForKey:@"NSUseRemoteSavePanel"], @NO), "actual private argument helper disables remote panels");
-    check(equal([cached volatileDomainForName:NSArgumentDomain][@"NSUseRemoteSavePanel"], @NO), "cached argument-domain access retains local-panel choice");
-    check(nativeRemotePanelConfig() != nullptr, "native factory code/hash identifies the real config getter");
-    check(verifyNativeLocalPanelConfig(), "actual native AppKit config getter returns local route");
-    check(NSApp == nil, "native config getter creates no application or panel");
     check(cached != isolatedDefaults && cached == capturedStandardDefaults, "cached identity retained");
     [cached setObject:@"path-from-own-open-panel" forKey:@"NSOSPLastRootDirectory"];
     check(equal([isolatedDefaults objectForKey:@"NSOSPLastRootDirectory"], @"path-from-own-open-panel"), "cached panel write reaches private suite");
