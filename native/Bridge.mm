@@ -38,6 +38,9 @@ constexpr uint32_t kARAX = fourCC('a', 'r', 'a', 'x');
 FILE* logFile;
 pthread_mutex_t logMutex = PTHREAD_MUTEX_INITIALIZER;
 std::atomic<bool> active{false};
+// Runtime compatibility failure must not undo preference/process isolation or
+// tear down a native document that the original setup already owns.
+std::atomic<bool> nativeARASetupEnabled{true};
 CFStringRef preferenceDomain;
 NSUserDefaults* isolatedDefaults;
 void** tagPlistVtable;
@@ -84,6 +87,29 @@ void logLine(const char* format, ...) {
 [[noreturn]] void refuse(const char* reason) {
     logLine("bridge_refused reason=%s", reason);
     _exit(78);
+}
+
+void reportRuntimeSetupFailure(const char* reason) {
+    const bool first = nativeARASetupEnabled.exchange(false, std::memory_order_acq_rel);
+    logLine("bridge_runtime_degraded reason=%s native_document_preserved=1 callback_modified=0 future_discovery_disabled=1 compatibility_valid=0", reason);
+#if !defined(LOGIC_ARA_BRIDGE_TEST)
+    if (first) {
+        NSString* detail = [NSString stringWithUTF8String:reason];
+        // Do not enter AppKit or a modal loop inside a native setup callback.
+        // This addresses only this process and never closes a document/app.
+        dispatch_async(dispatch_get_main_queue(), ^{
+            NSAlert* alert = [[NSAlert alloc] init];
+            alert.alertStyle = NSAlertStyleCritical;
+            alert.messageText = @"ARA compatibility was paused";
+            alert.informativeText = [NSString stringWithFormat:
+                @"Logic remains open. This ARA instance has not passed compatibility checks. Save your work, remove the affected ARA insert, and restart the launcher before continuing ARA editing.\n\nTechnical reason: %@", detail];
+            [alert addButtonWithTitle:@"Keep Logic Open"];
+            [alert runModal];
+        });
+    }
+#else
+    (void)first; // Offline tests execute the real setup guard without AppKit UI.
+#endif
 }
 
 // Logic's shared ARA interface precreates regions with its first track's
@@ -343,7 +369,8 @@ void setupNativeARA(void* object) {
     auto* bytes = static_cast<unsigned char*>(object);
     const uint32_t architecture = *reinterpret_cast<uint32_t*>(bytes + 0x1ec);
     const uint32_t type = *reinterpret_cast<uint32_t*>(bytes + 0x1e0);
-    const bool selected = active.load(std::memory_order_acquire) && architecture == kAUv2 && (type == kARAM || type == kARAX);
+    const bool selected = active.load(std::memory_order_acquire) &&
+        nativeARASetupEnabled.load(std::memory_order_acquire) && architecture == kAUv2 && (type == kARAM || type == kARAX);
     TemporaryAudioUnit temporary;
     if (selected && *reinterpret_cast<uint32_t*>(bytes + 0x1f0) == 0) {
         temporary.value = createNativeAU(object);
@@ -357,14 +384,30 @@ void setupNativeARA(void* object) {
     if (selected && *reinterpret_cast<void**>(bytes + 0x30) != nullptr) {
         // SetupSubClass builds this native interface table before creating the
         // ARA document. Clients retain its pointer for subsequent source reads.
+        // Original setup has completed and owns this document. These guards
+        // precede ALL bridge callback writes. Its void ABI provides no verified
+        // failure return, and destroying that live object here is unsafe.
+        // On mismatch leave the native document/factory/callback untouched,
+        // disable future manual discovery, and visibly invalidate compatibility.
+        if (!nativeARASetupEnabled.load(std::memory_order_acquire)) {
+            reportRuntimeSetupFailure("setup_disabled_during_native_setup");
+            return;
+        }
         if (*reinterpret_cast<uint64_t*>(bytes + 0x48) != 32 ||
-            *reinterpret_cast<void**>(bytes + 0x160) != bytes + 0x48)
-            refuse("source_reader_interface_layout_mismatch");
+            *reinterpret_cast<void**>(bytes + 0x160) != bytes + 0x48) {
+            reportRuntimeSetupFailure("source_reader_interface_layout_mismatch");
+            return;
+        }
         auto** slot = reinterpret_cast<void**>(bytes + 0x58);
-        if (*slot == reinterpret_cast<void*>(originalReadSamples))
-            __atomic_store_n(slot, reinterpret_cast<void*>(readNativeSourceSamples), __ATOMIC_RELEASE);
-        else if (*slot != reinterpret_cast<void*>(readNativeSourceSamples))
-            refuse("source_reader_callback_mismatch");
+        void* expected = reinterpret_cast<void*>(originalReadSamples);
+        if (!__atomic_compare_exchange_n(slot, &expected, reinterpret_cast<void*>(readNativeSourceSamples),
+                false, __ATOMIC_ACQ_REL, __ATOMIC_ACQUIRE) &&
+            expected != reinterpret_cast<void*>(readNativeSourceSamples)) {
+            // Failed compare/exchange writes nothing, including if another
+            // native owner changed this slot after its initial observation.
+            reportRuntimeSetupFailure("source_reader_callback_mismatch");
+            return;
+        }
     }
     if (selected) logLine("ara_setup type=%08x subtype=%08x manufacturer=%08x document_present=%d", type,
                           *reinterpret_cast<uint32_t*>(bytes + 0x1e4), *reinterpret_cast<uint32_t*>(bytes + 0x1e8),
@@ -520,6 +563,7 @@ void prepareExplicitProjectRequest() {
 }
 } // namespace
 
+#if !defined(LOGIC_ARA_BRIDGE_TEST)
 #define INTERPOSE(name, replacement, original) \
     __attribute__((used, section("__DATA,__interpose"))) static const struct { const void* replacement; const void* original; } name = \
         { reinterpret_cast<const void*>(replacement), reinterpret_cast<const void*>(original) }
@@ -586,3 +630,4 @@ __attribute__((constructor)) static void startBridge() { @autoreleasepool {
     prepareExplicitProjectRequest();
     logLine("bridge_ready version=12.4 build=6707 architecture=arm64 hosting=ara_only preferences=%s", domainValue);
 } }
+#endif
