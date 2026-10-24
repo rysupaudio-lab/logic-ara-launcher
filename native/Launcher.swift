@@ -3,7 +3,7 @@ import AppKit
 import CryptoKit
 import Darwin
 
-let launcherVersion = "0.2.0-candidate.2"
+let launcherVersion = "0.2.0-candidate.3"
 let enginePath = "Contents/Frameworks/MAAudioEngine.framework/Versions/A/MAAudioEngine"
 let corePath = "Contents/Frameworks/MACore.framework/Versions/A/MACore"
 let executablePath = "Contents/MacOS/Logic Pro"
