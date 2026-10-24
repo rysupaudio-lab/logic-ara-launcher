@@ -3,6 +3,7 @@ import json
 import os
 from pathlib import Path
 import plistlib
+import shutil
 import subprocess
 import tempfile
 import unittest
@@ -109,6 +110,24 @@ class NativeLauncherTests(unittest.TestCase):
         self.assertIn("exact private app", result.stderr)
         self.assertTrue(app.exists())
         self.assertTrue(lock.exists())
+
+    def test_additional_unrecorded_process_preserves_copy(self):
+        app, manifest, lock = self.make_session()
+        binary = app / "Contents/MacOS/Logic Pro"
+        binary.parent.mkdir(parents=True)
+        shutil.copyfile("/bin/sleep", binary)
+        binary.chmod(0o755)
+        # No DAW is launched. This harmless copied system utility exits itself;
+        # its unrecorded PID exercises the exact live-executable guard.
+        child = subprocess.Popen([str(binary), "3"])
+        try:
+            result = self.run_native("--cleanup", "--cache", self.cache)
+            self.assertNotEqual(result.returncode, 0)
+            self.assertIn("still use this private Logic copy", result.stderr)
+            self.assertTrue(app.exists())
+            self.assertTrue(lock.exists())
+        finally:
+            child.wait(timeout=10)
 
 
 if __name__ == "__main__":

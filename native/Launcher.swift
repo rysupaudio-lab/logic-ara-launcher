@@ -59,6 +59,22 @@ func jsonWrite(_ value: [String: Any], _ path: URL) throws {
     try JSONSerialization.data(withJSONObject: value, options: [.prettyPrinted, .sortedKeys]).write(to: path, options: .atomic)
 }
 func childAlive(_ pid: Int32) -> Bool { kill(pid, 0) == 0 || errno == EPERM }
+func processesUsing(_ executable: URL) throws -> [Int32] {
+    // Launch Services (or a user) can start another process from the same copy.
+    // A recorded child exiting is insufficient permission to delete that copy.
+    let estimate = proc_listallpids(nil, 0)
+    guard estimate > 0 else { throw fail("Could not inspect live processes; private copy preserved.") }
+    var pids = [Int32](repeating: 0, count: min(65536, max(4096, Int(estimate) * 2 + 256)))
+    let found = pids.withUnsafeMutableBytes { proc_listallpids($0.baseAddress, Int32($0.count)) }
+    guard found > 0, found < pids.count else { throw fail("Could not complete live-process inspection; private copy preserved.") }
+    let expected = canonical(executable).path
+    return pids.prefix(Int(found)).filter { pid in
+        guard pid > 0 else { return false }
+        var path = [CChar](repeating: 0, count: 4 * Int(MAXPATHLEN)) // PROC_PIDPATHINFO_MAXSIZE
+        let size = path.withUnsafeMutableBytes { proc_pidpath(pid, $0.baseAddress, UInt32($0.count)) }
+        return size > 0 && canonical(URL(fileURLWithPath: String(cString: path))).path == expected
+    }.sorted()
+}
 final class OwnedChild {
     private(set) var processIdentifier: Int32 = 0
     private(set) var terminationStatus: Int32 = 0
@@ -111,6 +127,8 @@ func cleanupFinishedSession(_ cache: URL) throws -> String {
         let value = key == "launcher_pid" ? owner?[key] : receipt[key]
         if let pid = value as? Int32, pid != getpid(), childAlive(pid) { throw fail("A previous launcher or Logic PID is still alive. Quit that session normally before cleanup.") }
     }
+    let liveCopies = try processesUsing(app.appendingPathComponent(executablePath))
+    guard liveCopies.isEmpty else { throw fail("Processes \(liveCopies) still use this private Logic copy. Quit them normally before cleanup.") }
     if fm.fileExists(atPath: app.path) {
         guard canonical(app) == app else { throw fail("The previous app path is a symlink. Preserve it for manual review.") }
         unregister(app); try fm.removeItem(at: app)
@@ -199,9 +217,15 @@ final class Session {
             operationError = error; receipt["status"] = "failed"; receipt["error"] = error.localizedDescription
         }
         // Preserve every live child; a startup PID is never permission to kill a user session.
-        let alive = process?.isRunning == true
+        var liveCopies: [Int32] = []
+        var processInspectionFailed = false
+        do { liveCopies = try processesUsing(app.appendingPathComponent(executablePath)) }
+        catch { receipt["cleanup_error"] = error.localizedDescription; operationError = error; processInspectionFailed = true }
+        let alive = process?.isRunning == true || !liveCopies.isEmpty || processInspectionFailed
         if alive {
-            receipt["status"] = "detached"; receipt["cleanup_pending"] = "Logic is still running; private copy and lock preserved."
+            receipt["status"] = "detached"; receipt["cleanup_pending"] = "A process may still use this private copy; application and lock preserved."
+            receipt["live_copy_pids"] = liveCopies
+            if operationError == nil { operationError = fail("Another live process uses the private Logic copy. Quit it normally, then use Clean finished session.") }
         } else {
             if fm.fileExists(atPath: app.path), canonical(app) == app {
                 unregister(app)
