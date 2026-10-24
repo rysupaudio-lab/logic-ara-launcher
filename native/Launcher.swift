@@ -126,6 +126,7 @@ final class Session {
     init(cache: URL, helper: URL) { self.cache = canonical(cache); self.helper = canonical(helper) }
     func launch(source: URL, project: URL?) throws {
         let source = canonical(source)
+        changed("Verifying the installed Logic signature and exact build…")
         var receipt = try inspect(source)
         guard fm.fileExists(atPath: helper.path), !helper.path.contains(":") else { throw fail("The bundled native bridge is missing or its path contains a colon.") }
         let helperHash = try digest(helper)
@@ -161,9 +162,12 @@ final class Session {
                                       arguments: (project.map { [$0.path] } ?? []) + ["-ApplePersistenceIgnoreState", "YES", "-NSQuitAlwaysKeepsWindows", "NO"], environment: env, directory: run, console: console)
             process = task
             receipt["pid"] = task.processIdentifier; receipt["process_group"] = getpgid(task.processIdentifier); receipt["status"] = "starting"; try jsonWrite(receipt, manifest)
-            let deadline = Date().addingTimeInterval(20)
+            changed("Starting the private Logic copy and waiting for its ARA bridge…")
+            // First launch may validate tens of thousands of bundle resources
+            // and update a large AU catalog before our constructor can run.
+            let deadline = ProcessInfo.processInfo.systemUptime + 180
             var ready = false
-            while Date() < deadline {
+            while ProcessInfo.processInfo.systemUptime < deadline {
                 let content = (try? String(contentsOf: log, encoding: .utf8)) ?? ""
                 if content.contains("bridge_refused") { throw fail("The bridge refused this process. See \(run.path).") }
                 if content.contains("bridge_ready") { ready = true; break }
