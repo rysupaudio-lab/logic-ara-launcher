@@ -7,7 +7,7 @@ source-only. No Apple application, third-party plug-in or license is distributed
 The native Apple Silicon app requires no Python or compiler at runtime. The
 normal launcher UI opened a backed-up synthetic Logic project, displayed actual
 ARA Audio Unit editors, saved the native project and exported 48 kHz/24-bit
-offline WAVs through normal Logic dialogs. Three independent Logic processes
+offline WAVs through normal Logic dialogs. Four independent Logic processes
 exited normally; each temporary application copy was removed, and the installed
 Logic signature and pinned executable/framework bytes verified unchanged.
 These runtime checks used Logic Pro 12.4 (6707) on macOS 27.0 (26A428).
@@ -47,6 +47,14 @@ at +5 exactly matched the warm renders. This supports the observed shared
 document processing behavior, but does not establish its behavior in an
 officially supported vendor host. The failed mixed-setting criterion is retained;
 no fitting or tolerance mask was used to turn it into a pass.
+
+A separate cold reopen launched from the extracted final candidate ZIP with both
+Formants saved at +5. Both actual ARA editors recalled the controls, and its
+408000-frame native offline bounce was sample-identical to the matching +5 warm
+reference (zero changed samples). That saved matching state has one additional
+independent cold-process test; the mixed-setting failure above remains. Normal
+Save/Quit, private-copy cleanup and the complete 2021-key normal preference
+baseline were verified after this extracted-artifact run.
 
 The actual bound VoiceAssist 1.3.24 editor reported an expired trial. Melodyne
 5.4.2 required activation for editing. Neither was activated or given a new
