@@ -3,7 +3,7 @@ import AppKit
 import CryptoKit
 import Darwin
 
-let launcherVersion = "0.2.0-candidate.1"
+let launcherVersion = "0.2.0-candidate.2"
 let enginePath = "Contents/Frameworks/MAAudioEngine.framework/Versions/A/MAAudioEngine"
 let corePath = "Contents/Frameworks/MACore.framework/Versions/A/MACore"
 let executablePath = "Contents/MacOS/Logic Pro"
@@ -130,7 +130,8 @@ func cleanupFinishedSession(_ cache: URL) throws -> String {
     let liveCopies = try processesUsing(app.appendingPathComponent(executablePath))
     guard liveCopies.isEmpty else { throw fail("Processes \(liveCopies) still use this private Logic copy. Quit them normally before cleanup.") }
     if fm.fileExists(atPath: app.path) {
-        guard canonical(app) == app else { throw fail("The previous app path is a symlink. Preserve it for manual review.") }
+        guard canonical(app).path == app.standardizedFileURL.path,
+              try app.resourceValues(forKeys: [.isSymbolicLinkKey]).isSymbolicLink != true else { throw fail("The previous app path is a symlink. Preserve it for manual review.") }
         unregister(app); try fm.removeItem(at: app)
     }
     receipt["cleanup_pending"] = nil; receipt["status"] = "cleaned_after_exit"; try jsonWrite(receipt, manifest)
@@ -146,9 +147,20 @@ final class Session {
         let source = canonical(source)
         changed("Verifying the installed Logic signature and exact build…")
         var receipt = try inspect(source)
+        guard cache.path != source.path, !cache.path.hasPrefix(source.path + "/") else { throw fail("The working folder must be outside the installed Logic application.") }
+        if cache.path.hasPrefix("/Volumes/") {
+            let components = cache.pathComponents
+            guard components.count >= 3 else { throw fail("Select a folder on a mounted working disk.") }
+            let volume = "/Volumes/" + components[2]
+            let mounted = fm.mountedVolumeURLs(includingResourceValuesForKeys: nil, options: []) ?? []
+            guard mounted.contains(where: { canonical($0).path == canonical(URL(fileURLWithPath: volume)).path }) else { throw fail("The selected working disk is not mounted. Reconnect it before launching.") }
+        }
         guard fm.fileExists(atPath: helper.path), !helper.path.contains(":") else { throw fail("The bundled native bridge is missing or its path contains a colon.") }
         let helperHash = try digest(helper)
-        if let project { guard project.pathExtension == "logicx", fm.fileExists(atPath: project.path) else { throw fail("Choose an existing, backed-up .logicx project.") } }
+        if let project {
+            guard project.pathExtension == "logicx", fm.fileExists(atPath: project.path) else { throw fail("Choose an existing, backed-up .logicx project.") }
+            guard !canonical(project).path.hasPrefix(source.path + "/") else { throw fail("Copy this project out of the installed Logic application before opening it.") }
+        }
         try fm.createDirectory(at: cache, withIntermediateDirectories: true, attributes: [.posixPermissions: 0o700])
         let lock = cache.appendingPathComponent("active.lock")
         guard Darwin.mkdir(lock.path, 0o700) == 0 else { throw fail("A launcher session is active, or needs cleanup. Quit its Logic copy normally, then choose Clean finished session.") }
@@ -164,7 +176,16 @@ final class Session {
             try jsonWrite(receipt, manifest)
             try jsonWrite(["launcher_pid": getpid(), "session": manifest.path], lock.appendingPathComponent("owner.json"))
             changed("Verifying and preparing a private Logic copy…")
-            try command("/bin/cp", ["-cR", source.path, app.path])
+            let sourceFS = try fm.attributesOfFileSystem(forPath: source.path)[.systemNumber] as? NSNumber
+            let targetFS = try fm.attributesOfFileSystem(forPath: run.path)[.systemNumber] as? NSNumber
+            if sourceFS != nil && sourceFS == targetFS {
+                receipt["copy_strategy"] = "same_filesystem_clone_request"
+                try command("/bin/cp", ["-cR", source.path, app.path])
+            } else {
+                receipt["copy_strategy"] = "cross_filesystem_signature_preserving_copy"
+                changed("Copying Logic to the selected working disk and verifying its original signature…")
+                try command("/usr/bin/ditto", ["--rsrc", "--extattr", source.path, app.path])
+            }
             let copy = try inspect(app)
             for key in ["engine_sha256", "macore_sha256", "executable_sha256"] {
                 guard copy[key] as? String == receipt[key] as? String else { throw fail("Private copy failed verification.") }
@@ -227,9 +248,12 @@ final class Session {
             receipt["live_copy_pids"] = liveCopies
             if operationError == nil { operationError = fail("Another live process uses the private Logic copy. Quit it normally, then use Clean finished session.") }
         } else {
-            if fm.fileExists(atPath: app.path), canonical(app) == app {
-                unregister(app)
-                do { try fm.removeItem(at: app) } catch { receipt["cleanup_error"] = error.localizedDescription; operationError = error }
+            if fm.fileExists(atPath: app.path) {
+                do {
+                    guard canonical(app).path == app.standardizedFileURL.path,
+                          try app.resourceValues(forKeys: [.isSymbolicLinkKey]).isSymbolicLink != true else { throw fail("Private app path changed; copy and lock preserved for review.") }
+                    unregister(app); try fm.removeItem(at: app)
+                } catch { receipt["cleanup_error"] = error.localizedDescription; operationError = error }
             }
             if receipt["cleanup_error"] == nil {
                 try? fm.removeItem(at: lock.appendingPathComponent("owner.json")); try? fm.removeItem(at: lock)
@@ -245,7 +269,10 @@ final class Session {
         changed("Logic exited. Private copy removed and original installation verified unchanged.\nDiagnostics: \(run.path)")
     }
 }
-func defaultCache() -> URL { fm.homeDirectoryForCurrentUser.appendingPathComponent("Library/Caches/LogicARALauncher") }
+func defaultCache() -> URL {
+    if let path = ProcessInfo.processInfo.environment["LOGIC_ARA_CACHE_ROOT"], path.hasPrefix("/") { return canonical(URL(fileURLWithPath: path)) }
+    return fm.homeDirectoryForCurrentUser.appendingPathComponent("Library/Caches/LogicARALauncher")
+}
 func bundledHelper() -> URL { Bundle.main.resourceURL!.appendingPathComponent("native/LogicARABridge.dylib") }
 final class LauncherDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
     var window: NSWindow!; var status: NSTextField!; var buttons: [NSButton] = []; var busy = false; var session: Session?

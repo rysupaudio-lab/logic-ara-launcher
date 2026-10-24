@@ -3,7 +3,6 @@ import json
 import os
 from pathlib import Path
 import plistlib
-import shutil
 import subprocess
 import tempfile
 import unittest
@@ -38,7 +37,7 @@ class NativeLauncherTests(unittest.TestCase):
     def test_version_has_no_runtime_dependency(self):
         result = self.run_native("--version")
         self.assertEqual(result.returncode, 0, result.stderr)
-        self.assertEqual(result.stdout.strip(), "0.2.0-candidate.1")
+        self.assertEqual(result.stdout.strip(), "0.2.0-candidate.2")
 
     def test_unknown_build_refuses_without_creating_cache(self):
         source = Path(self.temp.name) / "Unknown Logic.app"
@@ -115,11 +114,12 @@ class NativeLauncherTests(unittest.TestCase):
         app, manifest, lock = self.make_session()
         binary = app / "Contents/MacOS/Logic Pro"
         binary.parent.mkdir(parents=True)
-        shutil.copyfile("/bin/sleep", binary)
-        binary.chmod(0o755)
-        # No DAW is launched. This harmless copied system utility exits itself;
+        subprocess.run(["xcrun", "clang", "-x", "c", "-", "-o", str(binary)],
+                       input="#include <unistd.h>\nint main(void) { sleep(2); return 0; }\n",
+                       text=True, check=True, capture_output=True)
+        # No DAW is launched. This harmless own helper exits itself;
         # its unrecorded PID exercises the exact live-executable guard.
-        child = subprocess.Popen([str(binary), "3"])
+        child = subprocess.Popen([str(binary)])
         try:
             result = self.run_native("--cleanup", "--cache", self.cache)
             self.assertNotEqual(result.returncode, 0)
@@ -127,7 +127,7 @@ class NativeLauncherTests(unittest.TestCase):
             self.assertTrue(app.exists())
             self.assertTrue(lock.exists())
         finally:
-            child.wait(timeout=10)
+            self.assertEqual(child.wait(timeout=10), 0)
 
 
 if __name__ == "__main__":

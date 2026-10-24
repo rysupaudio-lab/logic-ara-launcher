@@ -42,6 +42,12 @@ If you quit the launcher first or it stops unexpectedly, any live Logic copy and
 its lock are preserved. After that copy has exited, reopen the launcher and choose
 **Clean finished session**. Cleanup refuses any recorded PID that is still alive.
 Diagnostics stay under `~/Library/Caches/LogicARALauncher/runs/`.
+Advanced use can place working copies on another disk by setting the absolute
+`LOGIC_ARA_CACHE_ROOT` environment variable before launching, or using CLI
+`--cache /absolute/folder`. A different filesystem receives a full,
+signature-preserving copy. The working folder must stay outside the installed
+Logic bundle. Cleanup refuses every live process using the exact private copy,
+including a second process started by Launch Services.
 
 To uninstall, quit the launcher's private Logic copy and the launcher, then move
 only **Logic ARA Launcher.app** to Trash. Removing the launcher does not modify
