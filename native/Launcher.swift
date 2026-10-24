@@ -174,7 +174,22 @@ final class Session {
             receipt["status"] = "running"; try jsonWrite(receipt, manifest); unregister(app)
             changed("ARA bridge ready. Use the visible Logic copy normally. Quit that copy when finished.\nDiagnostics: \(run.path)")
             print("Private Logic PID \(task.processIdentifier). Diagnostics: \(run.path)")
-            task.waitUntilExit()
+            while task.isRunning {
+                if receipt["ara_runtime_compatible"] as? Bool != false,
+                   let handle = try? FileHandle(forReadingFrom: log) {
+                    let size = (try? handle.seekToEnd()) ?? 0
+                    try? handle.seek(toOffset: size > 8192 ? size - 8192 : 0)
+                    let tail = String(decoding: (try? handle.readToEnd()) ?? Data(), as: UTF8.self)
+                    try? handle.close()
+                    if tail.contains("bridge_runtime_degraded") {
+                        receipt["ara_runtime_compatible"] = false
+                        receipt["runtime_warning"] = "ARA compatibility check failed; save your work, remove the affected insert and restart before further ARA editing. Live Logic is preserved."
+                        try jsonWrite(receipt, manifest)
+                        changed("ARA compatibility check failed. Logic remains open so you can save your work. Follow its compatibility alert, then restart before further ARA editing.\nDiagnostics: \(run.path)")
+                    }
+                }
+                Thread.sleep(forTimeInterval: 0.5)
+            }
             receipt["status"] = "exited"; receipt["exit_code"] = task.terminationStatus
         } catch {
             operationError = error; receipt["status"] = "failed"; receipt["error"] = error.localizedDescription
