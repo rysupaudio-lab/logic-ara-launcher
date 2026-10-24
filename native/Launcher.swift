@@ -198,7 +198,7 @@ final class Session {
             let consoleURL = run.appendingPathComponent("console.log"); fm.createFile(atPath: consoleURL.path, contents: nil, attributes: [.posixPermissions: 0o600])
             let console = try FileHandle(forWritingTo: consoleURL); defer { try? console.close() }
             let task = try OwnedChild(executable: app.appendingPathComponent(executablePath),
-                                      arguments: (project.map { [$0.path] } ?? []) + ["-ApplePersistenceIgnoreState", "YES", "-NSQuitAlwaysKeepsWindows", "NO"], environment: env, directory: run, console: console)
+                                      arguments: (project.map { [$0.path] } ?? []) + ["-ApplePersistenceIgnoreState", "YES", "-NSQuitAlwaysKeepsWindows", "NO", "-NSUseRemoteSavePanel", "NO"], environment: env, directory: run, console: console)
             process = task
             receipt["pid"] = task.processIdentifier; receipt["process_group"] = getpgid(task.processIdentifier); receipt["status"] = "starting"; try jsonWrite(receipt, manifest)
             changed("Starting the private Logic copy and waiting for its ARA bridge…")
