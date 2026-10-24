@@ -121,6 +121,14 @@ helper's imported original call-through pointer belongs to qualified MACore.
 Logic's current-application and explicit `com.apple.logic10` CFPreferences
 accesses are redirected to the launcher suite. `NSUserDefaults.standardUserDefaults`
 returns that suite, with window restoration disabled through volatile defaults.
+The child process also receives `-NSUseRemoteSavePanel NO` before AppKit
+initializes. The private volatile argument domain retains that value. This
+selects AppKit's existing local Open/Save panels, keeping navigation preferences
+in the same process as the isolated defaults. Remote file-panel services can
+write using the original application identity outside these in-process hooks;
+normal navigation isolation must therefore pass separately in runtime testing.
+No global AppKit setting or bundle identity is changed.
+
 The selected process's running-application queries exclude other Logic processes
 to prevent accidental handoff to the user's normal instance.
 
