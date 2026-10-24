@@ -124,6 +124,12 @@ returns that suite, with window restoration disabled through volatile defaults.
 The selected process's running-application queries exclude other Logic processes
 to prevent accidental handoff to the user's normal instance.
 
+The bridge also validates exact Foundation/CoreFoundation method encodings and
+image ownership for container-aware defaults routes before activation. Those
+private-runtime assumptions require qualification for each macOS build; the
+15.4 deployment target does not establish older macOS compatibility. The current
+candidate runtime test uses macOS 27.0 (26A428).
+
 This is application preference isolation, not a security sandbox. Global macOS
 preferences, plug-in preferences, audio devices, system component caches, and
 other files or services used by Logic and plug-ins remain shared. The bridge

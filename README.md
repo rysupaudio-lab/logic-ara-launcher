@@ -26,7 +26,11 @@ The native 0.2.0 candidate is being qualified locally. It is **not yet a public
 binary release**. Published alpha.2 remains a source-only release.
 
 The installable candidate requires an Apple Silicon Mac, macOS 15.4 or later,
-and your own licensed original Apple-signed Logic Pro **12.4 (6707)**. It contains
+and your own licensed original Apple-signed Logic Pro **12.4 (6707)**. The deployment
+target is a minimum executable requirement, not proof of compatibility across
+macOS versions: the current candidate is being tested on macOS 27.0 (26A428).
+It checks the exact Foundation/CoreFoundation method signatures and images at
+startup and refuses an incompatible runtime. It contains
 a native application and our bridge, with no Python or compiler requirement at
 runtime. No Logic binaries, ARA SDK, or third-party plug-ins are distributed.
 
