@@ -1,10 +1,15 @@
-# Qualification and limits
+# Historical RysUpPitch development qualification
 
-This experimental source-only alpha targets native ARM64 Logic Pro 12.4
+This source-only alpha.2 record targets native ARM64 Logic Pro 12.4
 (build 6707). Tests use synthetic 48 kHz sources and a private RysUpPitch
 development candidate containing the ARA and stereo synthesis fixes. The
 installed RysUpPitch 1.1.8 was not replaced. This launcher alone does not add
 those plug-in fixes to a released binary.
+
+The later native installable candidate uses separate normal-app and third-party
+checks. See [current candidate results](normal-app-candidate.md) and
+[its qualification data](normal-app-qualification.json). Do not combine this
+development plug-in matrix with the third-party results.
 
 ## Stereo qualification
 
@@ -32,7 +37,7 @@ anti-phase, left-only, right-only and quadrature audio.
 | Mixed-session independent repeat | Full mix and all four stems sample-identical; zero sample difference |
 | Launcher admission/ownership tests | 9/9 passed |
 | RysUpPitch focused compatibility tests | 4/4 suites passed, including 470 stereo assertions |
-| Licensed Melodyne editing, other plug-ins or Logic builds | Untested |
+| Licensed Melodyne editing, other plug-ins or Logic builds | Outside this historical matrix; see current candidate scope |
 
 ## What changed
 

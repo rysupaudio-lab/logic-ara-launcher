@@ -1,0 +1,118 @@
+{
+  "schema": "logic-normal-app-public-qualification/1",
+  "candidate": "0.2.0-candidate.5",
+  "artifactSourceCommit": "b3d2be8",
+  "bridgeCommit": "aa85146",
+  "status": {
+    "signedDeveloperID": true,
+    "notarized": false,
+    "published": false,
+    "overallConsumerQualificationComplete": false
+  },
+  "runtime": {
+    "LogicVersion": "12.4",
+    "LogicBuild": "6707",
+    "architecture": "arm64",
+    "macOS": "27.0",
+    "macOSBuild": "26A428",
+    "deploymentTarget": "15.4",
+    "deploymentTargetEstablishesOtherOSQualification": false
+  },
+  "nativeFilesSHA256": {
+    "launcher": "e3ddb762a2d5269f29d2b325aeb53b5734c60ffd975cc8ef0625dca0ef77f836",
+    "bridge": "c32dd4aac31d10c769452f1f947bf636cfab8853907daecc911b7c4a2f2ff343"
+  },
+  "distribution": {
+    "pythonRuntimeRequired": false,
+    "compilerRuntimeRequired": false,
+    "AppleCodeBundled": false,
+    "thirdPartyPluginsBundled": false,
+    "ZIPExtractedSignatureAndNativePinsVerified": true,
+    "readonlyDMGSignatureAndNativePinsVerified": true,
+    "finalZIPNormalGUIEntryTested": true
+  },
+  "normalApp": {
+    "nativeProjectOpen": true,
+    "normalARAAUEditor": true,
+    "nativeSave": true,
+    "normalOfflineBounce48k24": true,
+    "normalQuitAndPrivateCopyCleanup": true,
+    "privateVendorAPIsUsed": false
+  },
+  "autochoir": {
+    "version": "1.0.0",
+    "component": {
+      "type": "arax",
+      "subtype": "Acho",
+      "manufacturer": "Ofwh"
+    },
+    "fixture": {
+      "monoSources": 3,
+      "stereoSources": 1,
+      "fullTrimmedReusedRegions": 8,
+      "sampleRate": 48000
+    },
+    "actualNativeSourceReadsObserved": true,
+    "returnedSourcePCMFingerprintsMeasured": false,
+    "actualEditsChangeNativeAudio": true,
+    "nativeStateMediaGraphAndARASidecarsPreserved": true,
+    "differentFormantSettings": {
+      "qualified": false,
+      "coldProcessCount": 2,
+      "coldRendersSampleIdentical": true,
+      "withinColdRepeatSampleIdentical": true,
+      "warmColdSampleIdentical": false,
+      "bothFormantMinus5MatchesColdExact": true,
+      "bothFormantPlus5MatchesWarmExact": true,
+      "officialSupportedHostControlEstablished": false
+    },
+    "matchingFormantPlus5": {
+      "warmReference": "both inserts .0500 detune and +5 Formant",
+      "independentColdProcessCount": 1,
+      "fromFinalExtractedZIP": true,
+      "actualBothEditorControlsRecalled": true,
+      "frames": 408000,
+      "channels": 2,
+      "sampleRate": 48000,
+      "PCMBitDepth": 24,
+      "sampleIdenticalToWarm": true,
+      "changedValues": 0,
+      "maxAbsoluteDifference": 0.0,
+      "RMSDifference": 0.0,
+      "PCM32SHA256": "3ab67fa56304cf4bb22ab824a7cc4cbe34f96a17dc90efea461f5efd0c9208bf"
+    },
+    "scope": "Matching controls and one saved matching-state cold render are proven. Independent differing Formant settings on shared-document inserts are not qualified."
+  },
+  "licenses": {
+    "VoiceAssist1.3.24": "bound editor reported expired trial; not activated",
+    "Melodyne5.4.2": "activation required for editing; not activated",
+    "SyncVx": "bound normal native test pending"
+  },
+  "preservation": {
+    "originalLogicSignatureAndCodePinsUnchanged": true,
+    "recordedInstalledThirdPartyCodePinsUnchanged": true,
+    "DAWAndAudioPreferencesPrivate": true,
+    "sharedSystemNavigationHistoryKeys": [
+      "NSOSPLastRootDirectory",
+      "NSWindow Frame GoToSheet"
+    ],
+    "consumerRestoresNormalPreferences": false,
+    "QAOnlyKnownTaskPreimagesRestoredAfterActualExit": true,
+    "normalPreferenceKeyCount": 2021,
+    "normalFullDictionaryExactAfterScopedRestoration": true,
+    "forceQuitSignalsOrDontSaveUsed": false
+  },
+  "remaining": [
+    "second independent matching+5 saved-state cold test",
+    "normal existing-license Sync Vx bound editor/native test",
+    "root final scope, notarization and publication decision"
+  ],
+  "notClaimed": [
+    "universal ARA plug-in compatibility",
+    "all Logic or macOS versions",
+    "ARA conformance certification",
+    "arbitrary customer-session qualification",
+    "exact third-party source PCM fingerprints",
+    "independent mixed Formant settings"
+  ]
+}

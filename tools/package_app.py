@@ -13,7 +13,8 @@ root = Path(__file__).resolve().parents[1]
 parser = argparse.ArgumentParser(description=__doc__)
 parser.add_argument("--app", type=Path, default=root / "dist/Logic ARA Launcher.app")
 parser.add_argument("--output", type=Path, default=root / "dist/packages")
-parser.add_argument("--identity", help="Developer ID Application signing identity; omit for an ad-hoc test package")
+parser.add_argument("--identity", help="Developer ID Application identity; with --preserve-signature, signs only the DMG")
+parser.add_argument("--preserve-signature", action="store_true", help="Verify the existing app/helper and package without re-signing either")
 parser.add_argument("--name", default="Logic ARA Launcher")
 parser.add_argument("--version", default="0.2.0-candidate.5")
 parser.add_argument("--stem", default="Logic-ARA-Launcher-0.2.0-candidate.5-arm64")
@@ -33,8 +34,15 @@ sign = ["/usr/bin/codesign", "--force", "--sign", identity]
 if args.identity:
     sign += ["--options", "runtime", "--timestamp"]
 helper = app / args.helper_relative
-run(*sign, helper)
-run(*sign, app)
+with (app / "Contents/Info.plist").open("rb") as stream:
+    app_info = plistlib.load(stream)
+native_files = [app / "Contents/MacOS" / app_info["CFBundleExecutable"], helper]
+native_before = {str(p.relative_to(app)): hashlib.sha256(p.read_bytes()).hexdigest() for p in native_files}
+if not args.preserve_signature:
+    run(*sign, helper)
+    run(*sign, app)
+else:
+    run("/usr/bin/codesign", "--verify", "--strict", helper)
 run("/usr/bin/codesign", "--verify", "--deep", "--strict", "--verbose=2", app)
 stem = args.stem
 if Path(stem).name != stem or not stem:
@@ -57,16 +65,22 @@ with tempfile.TemporaryDirectory(prefix="logic-ara-package-", dir=out) as scratc
         f"Uninstall: drag only {args.name}.app to Trash. Session diagnostics are in\n"
         f"~/Library/Caches/{args.cache_name}. Quit all launcher copies before cleaning its cache.\n\n"
         "This is an experimental candidate, independent of Apple and plugin vendors.\n"
-        "Compatibility testing is still in progress. It is not a qualified public release.\n"
+        "Compatibility is limited to the exact host build and documented test cases.\n"
+        "Read the release qualification and known limitations before using backed-up projects.\n"
     )
     run("/usr/bin/hdiutil", "create", "-ov", "-format", "UDZO", "-volname", args.name, "-srcfolder", staging, dmg_path)
 if args.identity:
     run("/usr/bin/codesign", "--sign", identity, "--timestamp", dmg_path)
-with (app / "Contents/Info.plist").open("rb") as stream:
-    app_info = plistlib.load(stream)
-files = [app / "Contents/MacOS" / app_info["CFBundleExecutable"], helper, zip_path, dmg_path]
+native_after = {str(p.relative_to(app)): hashlib.sha256(p.read_bytes()).hexdigest() for p in native_files}
+if args.preserve_signature and native_before != native_after:
+    raise RuntimeError("Qualified native files changed while preserving signatures")
+signature = subprocess.run(["/usr/bin/codesign", "--display", "--verbose=4", str(app)], capture_output=True, text=True, check=True).stderr
+developer_id = "Authority=Developer ID Application:" in signature
+files = [*native_files, zip_path, dmg_path]
 receipt = {"schema": "ara-launcher-package/1", "name": args.name, "version": args.version, "architecture": "arm64", "minimum_macos": app_info.get("LSMinimumSystemVersion"), "python_runtime_required": False,
-           "signed": bool(args.identity), "notarized": False, "published": False, "qualification": "pending normal-app and third-party runtime checks",
+           "signed": developer_id, "app_signature_preserved": args.preserve_signature,
+           "native_hashes_unchanged": native_before == native_after,
+           "notarized": False, "published": False, "qualification": "see exact release qualification; packaging alone does not establish runtime compatibility",
            "files": [{"path": str(p), "bytes": p.stat().st_size, "sha256": hashlib.sha256(p.read_bytes()).hexdigest()} for p in files]}
 (out / f"{stem}.json").write_text(json.dumps(receipt, indent=2) + "\n")
 print(json.dumps(receipt, indent=2))

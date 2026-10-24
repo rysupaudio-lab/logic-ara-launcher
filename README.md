@@ -5,24 +5,30 @@ It starts a signature-preserving private copy of your own Logic installation wit
 a process-local bridge. The installed application is read and verified, never
 patched or re-signed. Unknown builds are refused.
 
-**Experimental alpha.** Admission is limited to one exact Logic build. Native
-mono and stereo ARA source acquisition, independent region edits and native
-saving have been tested with a development build of RysUpPitch. The stereo test
-covers six tracks and twelve regions: independent left/right melodies,
-proportional channels, anti-phase, left-only, right-only and quadrature audio.
-Two independent cold processes restored all 48 saved note identities/offsets
-and produced sample-identical mixes and all six stems. These are bounded
-synthetic-audio checks; other plug-ins and general customer sessions remain
-unqualified.
+**Experimental candidate.** Admission is limited to one exact Logic build and
+reviewed native runtime assumptions. The native app has opened backed-up projects,
+displayed genuine ARA AU editors, saved native projects and exported audio through
+normal Logic dialogs. Third-party checks use autochoir 1.0.0 with synthetic mono
+and stereo sources at 48 kHz. Matching settings produced an exact warm/cold render;
+independent differing Formant settings across shared-document inserts are **not
+qualified**. See [the current evidence and limitations](docs/normal-app-candidate.md)
+and [machine-readable results](docs/normal-app-qualification.json).
 
-The RysUpPitch tests use unreleased compatibility fixes. The installed/released
-RysUpPitch 1.1.8 has separate editor and archive compatibility issues; this launcher
-alone does not fix them. Other ARA plug-ins, including licensed Melodyne editing,
-have not been qualified.
+Earlier source-only alpha.2 tests used an unreleased RysUpPitch development build:
+six tracks/twelve stereo regions and a mixed mono/stereo session passed bounded
+source, edit, save and two-cold-reopen checks. Those plug-in fixes are separate
+from this launcher. Installed/released RysUpPitch 1.1.8 was not replaced, and the
+launcher alone does not repair its editor/archive issues. See
+[the historical development qualification](docs/qualification.md).
+
+VoiceAssist's bound editor reported an expired trial; Melodyne required activation
+for editing. No activation or new trial was performed. Sync Vx's bound native test
+remains pending. No broad third-party or arbitrary customer-session compatibility
+is claimed.
 
 ## Install the candidate
 
-The native 0.2.0 candidate is being qualified locally. It is **not yet a public
+The native 0.2.0-candidate.5 is being qualified locally. It is **not yet a public
 binary release**. Published alpha.2 remains a source-only release.
 
 The installable candidate requires an Apple Silicon Mac, macOS 15.4 or later,
@@ -87,7 +93,9 @@ Create a local zip/DMG candidate with an ad-hoc signature:
 ```
 
 For a Developer ID candidate, pass the available signing identity with
-`--identity`. Packaging does not submit for notarization or publish anything.
+`--identity`. To repackage an already qualified signed app without changing its
+launcher or bridge signatures, use `--preserve-signature`; `--identity` then
+signs only the DMG. Packaging does not submit for notarization or publish anything.
 The source `launcher.py` remains available for the separate qualification harness;
 it is not the native app entry point and is not included in the binary app.
 
@@ -109,7 +117,7 @@ available. ARA access does not remove a plug-in's licensing requirements.
   release requires new analysis and qualification, not an edited version string.
 - This is an unsupported experiment. Keep project backups and use test projects.
 - Runtime discovery is generic; plug-in editor, archive and rendering compatibility
-  remain plug-in responsibilities. Melodyne editing has not been qualified.
+  remain plug-in responsibilities. See the exact current third-party scope above.
 - The helper changes dispatch data in its own process; signed files are unchanged.
   macOS must permit the original application to load the helper. There is no
   entitlement alteration, signature-check bypass, or instruction patch fallback.
