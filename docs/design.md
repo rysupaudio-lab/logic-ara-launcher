@@ -1,5 +1,21 @@
 # Runtime design
 
+The installable app uses a native ARM64 Swift/AppKit entry point with only system
+frameworks and the macOS Swift runtime. Python and Command Line Tools are needed
+to build from source, not to run the packaged app. The older Python launcher is
+retained solely for existing source-level qualification harnesses. Both use the
+same build-bound native bridge. The native GUI exposes source selection, an
+explicit project picker, compatibility checks and cleanup of a finished session.
+
+Session admission uses atomic POSIX `mkdir` for the cache lock. The full Logic
+child is spawned directly with its own process group so a terminal interrupt to
+the launcher cannot also interrupt Logic. The launcher has no child termination
+operation. GUI quit while a session is active explains that the live copy and
+lock will remain. A later cleanup checks every recorded launcher/child PID and
+refuses all live PIDs, including reuse, rather than attempting to adopt a session.
+Receipt paths outside this cache and symlinked application paths are refused.
+Only the exact generated private app is removed; session diagnostics stay.
+
 The launcher verifies the installed bundle identity, Apple signature, version,
 build, and full MAAudioEngine hash. It creates an APFS clone in a unique owned run
 directory and verifies the copy before executing its Mach-O entry point directly.

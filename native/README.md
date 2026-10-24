@@ -20,7 +20,7 @@ page's previous permissions afterward.
 ## Launcher contract
 
 - `LOGIC_ARA_APP_PATH`: absolute path to the private copied `.app`.
-- `LOGIC_ARA_PARENT_PID`: PID of the Python launcher; must match the actual parent
+- `LOGIC_ARA_PARENT_PID`: PID of the native launcher (or source QA launcher); must match the actual parent
   before the helper activates.
 - `LOGIC_ARA_LOG_PATH`: absolute path to an append-only session log owned by the
   current user. A symlink at the log path is rejected.
@@ -72,7 +72,7 @@ universal-file hashes:
 | `Contents/Frameworks/MACore.framework/Versions/A/MACore` | `331ce81830f253f3d47f9a219264a51c92bd1d66f03cafd166f04a8b5d6a745b` |
 
 Do not update these hashes alone to admit another build: every private ABI
-assumption below requires requalification. The Python launcher additionally
+assumption below requires requalification. Both launcher implementations additionally
 verifies the copied application's original Apple signature.
 
 ## Private ABI assumptions

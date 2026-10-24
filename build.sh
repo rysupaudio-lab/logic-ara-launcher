@@ -10,4 +10,5 @@ xcrun clang++ -arch arm64 -mmacosx-version-min=15.4 -std=c++17 -fobjc-arc -dynam
   -Wl,-undefined,dynamic_lookup native/Bridge.mm -o native/LogicARABridge.dylib
 codesign --force --sign - native/LogicARABridge.dylib
 /usr/bin/python3 tools/build_app.py
-echo 'Built dist/Logic ARA Launcher.app. Open it, or run ./launcher.py --check.'
+codesign --force --sign - 'dist/Logic ARA Launcher.app'
+echo 'Built standalone native dist/Logic ARA Launcher.app. No Python or compiler is needed to run the app.'
