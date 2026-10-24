@@ -34,6 +34,12 @@ int main() { @autoreleasepool {
     CFDictionaryRef originalBefore = CFPreferencesCopyMultiple(nullptr, (__bridge CFStringRef)originalName,
         kCFPreferencesCurrentUser, kCFPreferencesAnyHost);
     active.store(true);
+    logFile = tmpfile();
+    installCorePreferencesIsolation();
+    check(!corePreferencesMethodMatches(nullptr, "v16@0:8"), "missing private method refuses ABI admission");
+    Method identifierMethod = class_getInstanceMethod([NSUserDefaults class], sel_registerName("_identifier"));
+    check(!corePreferencesMethodMatches(identifierMethod, "v16@0:8"), "incorrect private signature refuses ABI admission");
+    check(corePreferencesMethodMatches(identifierMethod, "^{__CFString=}16@0:8"), "actual identifier signature/image verified");
     installDefaultsInstanceIsolation();
     Method accessor = class_getClassMethod([NSUserDefaults class], @selector(standardUserDefaults));
     IMP originalAccessor = method_setImplementation(accessor, reinterpret_cast<IMP>(standardDefaults));
@@ -43,6 +49,28 @@ int main() { @autoreleasepool {
     check(equal([isolatedDefaults objectForKey:@"NSOSPLastRootDirectory"], @"path-from-own-open-panel"), "cached panel write reaches private suite");
     check(equal([cached stringForKey:@"identity"], @"private"), "cached reads use private domain");
     check(equal([vendor stringForKey:@"identity"], @"vendor"), "explicit third-party suite keeps own reads");
+    [originalSuite setObject:@"separate-logic-receiver" forKey:@"NSWindow Frame GoToSheet"];
+    check(equal([isolatedDefaults objectForKey:@"NSWindow Frame GoToSheet"], @"separate-logic-receiver"), "separate protected-domain instance redirects");
+    check(defaultsReceiver(originalSuite) == isolatedDefaults, "actual domain getter identifies independent protected instance");
+    // Deliberately bypass the NSUserDefaults method hook to exercise the actual
+    // Foundation -> private container-aware CoreFoundation setter boundary.
+    using OriginalSet = void (*)(id, SEL, id, NSString*);
+    reinterpret_cast<OriginalSet>(originalDefaultsOperation(@selector(setObject:forKey:)))(
+        originalSuite, @selector(setObject:forKey:), @"private-cf-setter", @"container-boundary");
+    check(equal([isolatedDefaults objectForKey:@"container-boundary"], @"private-cf-setter"), "container-aware setter redirects original-IMP bypass");
+    CFPreferencesSetAppValue(CFSTR("direct-cf"), CFSTR("private-cf-value"), (__bridge CFStringRef)originalName);
+    check(equal([isolatedDefaults objectForKey:@"direct-cf"], @"private-cf-value"), "direct public CF app setter reaches protected internal boundary");
+    CFPropertyListRef appValue = CFPreferencesCopyAppValue(CFSTR("direct-cf"), (__bridge CFStringRef)originalName);
+    check(appValue && CFEqual(appValue, CFSTR("private-cf-value")), "private CF app getter redirects protected identifier");
+    if (appValue) CFRelease(appValue);
+    CFPropertyListRef tupleValue = CFPreferencesCopyValue(CFSTR("direct-cf"), (__bridge CFStringRef)originalName,
+        kCFPreferencesCurrentUser, kCFPreferencesAnyHost);
+    check(tupleValue && CFEqual(tupleValue, CFSTR("private-cf-value")), "private CF tuple getter preserves user/host and redirects identifier");
+    if (tupleValue) CFRelease(tupleValue);
+    using NamedSet = void (*)(id, SEL, id, NSString*, NSString*);
+    reinterpret_cast<NamedSet>(objc_msgSend)(vendor, sel_registerName("setObject:forKey:inDomain:"),
+        @"private-named-write", @"private-named", originalName);
+    check(equal([isolatedDefaults objectForKey:@"private-named"], @"private-named-write"), "private explicit-domain setter redirects");
     [vendor setObject:@"vendor-write" forKey:@"local"];
     check(equal([vendor objectForKey:@"local"], @"vendor-write") && [isolatedDefaults objectForKey:@"local"] == nil, "third-party write remains separate");
     [cached setInteger:47 forKey:@"integer"]; check([cached integerForKey:@"integer"] == 47, "integer ABI");
@@ -78,8 +106,10 @@ int main() { @autoreleasepool {
     [cached removePersistentDomainForName:originalName];
     check([isolatedDefaults persistentDomainForName:privateName].count == 0, "protected domain removal is private");
     [vendor synchronize]; [cached synchronize];
+    active.store(false); // independent read of the real synthetic source domain
     CFDictionaryRef originalAfter = CFPreferencesCopyMultiple(nullptr, (__bridge CFStringRef)originalName,
         kCFPreferencesCurrentUser, kCFPreferencesAnyHost);
+    active.store(true);
     check(originalBefore && originalAfter && CFEqual(originalBefore, originalAfter), "original protected persistent contents unchanged");
     check(defaultsDomainName(NSGlobalDomain) == NSGlobalDomain, "global domain not redirected");
     check(equal(defaultsDomainName(vendorName), vendorName), "vendor domain name not redirected");
@@ -87,16 +117,20 @@ int main() { @autoreleasepool {
     check([cached objectIsForcedForKey:@"nonexistent" inDomain:originalName] == [isolatedDefaults objectIsForcedForKey:@"nonexistent" inDomain:privateName], "forced-domain BOOL getter");
     [cached addSuiteNamed:originalName]; [cached removeSuiteNamed:originalName];
     check(defaultsReceiver(vendor) == vendor && defaultsReceiver(cached) == isolatedDefaults, "receiver identity boundary");
+    check(navigationPreferenceTraces.load() > 0, "two-key navigation trace observed without logging values");
     // Restore only this test process's method dispatch before removing its own
     // named domains. Never restore/delete any user's domain or preference file.
     method_setImplementation(accessor, originalAccessor);
     active.store(false);
     for (const auto& operation : defaultsOperations)
         method_setImplementation(class_getInstanceMethod([NSUserDefaults class], operation.selector), operation.original);
+    for (const auto& operation : corePreferencesOperations)
+        method_setImplementation(operation.method, operation.original);
     [originalSuite removePersistentDomainForName:originalName];
     [isolatedDefaults removePersistentDomainForName:privateName];
     [vendor removePersistentDomainForName:vendorName];
     [originalSuite synchronize]; [isolatedDefaults synchronize]; [vendor synchronize];
     if (originalBefore) CFRelease(originalBefore); if (originalAfter) CFRelease(originalAfter);
+    fclose(logFile); logFile = nullptr;
     printf("{\"checks\":%u,\"pass\":true,\"scope\":\"Foundation cached-standard operations and unique synthetic domains only; no Logic/plugin/UI launch\"}\n",checks);
 } }

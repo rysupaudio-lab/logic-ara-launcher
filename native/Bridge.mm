@@ -309,6 +309,94 @@ CFArrayRef preferencesCopyKeyList(CFStringRef app, CFStringRef user, CFStringRef
 }
 id standardDefaults(id, SEL) { return isolatedDefaults; }
 
+// Foundation/AppKit can use private, container-aware preferences calls that do
+// not traverse dyld's public CFPreferences interposes. Pin their actual runtime
+// Objective-C signatures and owning image before installing these boundaries.
+// Every wrapper changes only the exact current/Logic identifier. Containers,
+// configuration URLs, users, hosts and unrelated preference domains survive.
+using DefaultsIdentifierFn = CFStringRef (*)(id, SEL);
+DefaultsIdentifierFn nativeDefaultsIdentifier;
+SEL nativeDefaultsIdentifierSelector;
+using PrefsSetAppFn = void (*)(id, SEL, CFPropertyListRef, CFStringRef, CFStringRef, CFStringRef, CFURLRef);
+using PrefsCopyAppFn = CFPropertyListRef (*)(id, SEL, CFStringRef, CFStringRef, CFStringRef, CFURLRef);
+using PrefsCopyValueFn = CFPropertyListRef (*)(id, SEL, CFStringRef, CFStringRef, CFStringRef, CFStringRef, CFStringRef);
+PrefsSetAppFn originalPrefsSetApp;
+PrefsCopyAppFn originalPrefsCopyApp;
+PrefsCopyValueFn originalPrefsCopyValue;
+std::atomic<unsigned> navigationPreferenceTraces{0};
+
+CFStringRef defaultsIdentifier(id object) {
+    return nativeDefaultsIdentifier && [object isKindOfClass:[NSUserDefaults class]] ?
+        nativeDefaultsIdentifier(object, nativeDefaultsIdentifierSelector) : nullptr;
+}
+void traceNavigationPreference(const char* api, CFStringRef key, id receiver,
+        CFStringRef identifier, const void* caller) {
+    if (!active.load(std::memory_order_acquire) || !key || !logFile ||
+        (!CFEqual(key, CFSTR("NSOSPLastRootDirectory")) && !CFEqual(key, CFSTR("NSWindow Frame GoToSheet")))) return;
+    if (navigationPreferenceTraces.fetch_add(1, std::memory_order_relaxed) >= 64) return;
+    char name[64]{};
+    CFStringGetCString(key, name, sizeof(name), kCFStringEncodingASCII);
+    const char* domain = !identifier ? "nil" :
+        CFEqual(identifier, preferenceDomain) ? "private" :
+        isolatedDomain(identifier) == preferenceDomain ? "logic" : "other";
+    Dl_info image{}; dladdr(caller, &image);
+    const char* basename = image.dli_fname ? strrchr(image.dli_fname, '/') : nullptr;
+    logLine("preferences_navigation_write api=%s key=\"%s\" receiver=%s class=%s domain=%s caller_image=%s caller_symbol=\"%s\" values_omitted=1",
+        api, name, receiver == capturedStandardDefaults ? "captured_standard" : receiver == isolatedDefaults ? "private_suite" : "other",
+        receiver ? object_getClassName(receiver) : "nil", domain,
+        basename ? basename + 1 : "unknown", image.dli_sname ? image.dli_sname : "unknown");
+}
+void prefsSetAppValue(id self, SEL selector, CFPropertyListRef value, CFStringRef key,
+        CFStringRef identifier, CFStringRef container, CFURLRef configuration) {
+    traceNavigationPreference("CFXPreferences", key, self, identifier, __builtin_return_address(0));
+    originalPrefsSetApp(self, selector, value, key, isolatedDomain(identifier), container, configuration);
+}
+CFPropertyListRef prefsCopyAppValue(id self, SEL selector, CFStringRef key,
+        CFStringRef identifier, CFStringRef container, CFURLRef configuration) {
+    return originalPrefsCopyApp(self, selector, key, isolatedDomain(identifier), container, configuration);
+}
+CFPropertyListRef prefsCopyValue(id self, SEL selector, CFStringRef key, CFStringRef identifier,
+        CFStringRef user, CFStringRef host, CFStringRef container) {
+    return originalPrefsCopyValue(self, selector, key, isolatedDomain(identifier), user, host, container);
+}
+struct CorePreferencesOperation {
+    const char* name; const char* encoding; IMP replacement; Method method; IMP original;
+};
+CorePreferencesOperation corePreferencesOperations[] = {
+    {"setValue:forKey:appIdentifier:container:configurationURL:",
+        "v56@0:8^v16^{__CFString=}24^{__CFString=}32^{__CFString=}40^{__CFURL=}48", reinterpret_cast<IMP>(prefsSetAppValue), nullptr, nullptr},
+    {"copyAppValueForKey:identifier:container:configurationURL:",
+        "^v48@0:8^{__CFString=}16^{__CFString=}24^{__CFString=}32^{__CFURL=}40", reinterpret_cast<IMP>(prefsCopyAppValue), nullptr, nullptr},
+    {"copyValueForKey:identifier:user:host:container:",
+        "^v56@0:8^{__CFString=}16^{__CFString=}24^{__CFString=}32^{__CFString=}40^{__CFString=}48", reinterpret_cast<IMP>(prefsCopyValue), nullptr, nullptr}
+};
+bool corePreferencesMethodMatches(Method method, const char* encoding) {
+    Dl_info image{};
+    return method && strcmp(method_getTypeEncoding(method), encoding) == 0 &&
+        dladdr(reinterpret_cast<void*>(method_getImplementation(method)), &image) && image.dli_fname &&
+        strcmp(image.dli_fname, "/System/Library/Frameworks/CoreFoundation.framework/Versions/A/CoreFoundation") == 0;
+}
+void installCorePreferencesIsolation() {
+    Class preferences = NSClassFromString(@"_CFXPreferences");
+    nativeDefaultsIdentifierSelector = sel_registerName("_identifier");
+    Method identifier = class_getInstanceMethod([NSUserDefaults class], nativeDefaultsIdentifierSelector);
+    if (!preferences || !corePreferencesMethodMatches(identifier, "^{__CFString=}16@0:8"))
+        refuse("preferences_identifier_abi_unqualified");
+    for (auto& operation : corePreferencesOperations) {
+        operation.method = class_getInstanceMethod(preferences, sel_registerName(operation.name));
+        if (!corePreferencesMethodMatches(operation.method, operation.encoding))
+            refuse("preferences_container_abi_unqualified");
+        operation.original = method_getImplementation(operation.method);
+    }
+    nativeDefaultsIdentifier = reinterpret_cast<DefaultsIdentifierFn>(method_getImplementation(identifier));
+    originalPrefsSetApp = reinterpret_cast<PrefsSetAppFn>(corePreferencesOperations[0].original);
+    originalPrefsCopyApp = reinterpret_cast<PrefsCopyAppFn>(corePreferencesOperations[1].original);
+    originalPrefsCopyValue = reinterpret_cast<PrefsCopyValueFn>(corePreferencesOperations[2].original);
+    for (const auto& operation : corePreferencesOperations)
+        method_setImplementation(operation.method, operation.replacement);
+    logLine("preferences_container_boundary_ready methods=3 identifier_getter_verified=1 other_domains_preserved=1");
+}
+
 // AppKit may retain the original standard object before our constructor runs.
 // Changing only +standardUserDefaults does not redirect those cached receivers.
 // Override public NSUserDefaults operations, forwarding only that exact object
@@ -318,7 +406,10 @@ id standardDefaults(id, SEL) { return isolatedDefaults; }
 struct DefaultsOperation { const char* name; IMP replacement; SEL selector; IMP original; Method method; };
 IMP originalDefaultsOperation(SEL selector);
 id defaultsReceiver(id self) {
-    return active.load(std::memory_order_acquire) && self == capturedStandardDefaults ? isolatedDefaults : self;
+    if (!active.load(std::memory_order_acquire)) return self;
+    if (self == capturedStandardDefaults) return isolatedDefaults;
+    CFStringRef identifier = defaultsIdentifier(self);
+    return identifier && isolatedDomain(identifier) == preferenceDomain ? isolatedDefaults : self;
 }
 NSString* defaultsDomainName(NSString* name) {
     return name ? (__bridge NSString*)isolatedDomain((__bridge CFStringRef)name) : nil;
@@ -339,6 +430,7 @@ DEFAULTS_KEY_GETTER(defaultsBoolForKey, BOOL)
 #undef DEFAULTS_KEY_GETTER
 #define DEFAULTS_KEY_SETTER(function, type) \
 void function(id self, SEL selector, type value, NSString* key) { \
+    traceNavigationPreference(sel_getName(selector), (__bridge CFStringRef)key, self, defaultsIdentifier(self), __builtin_return_address(0)); \
     id target = defaultsReceiver(self); \
     using Call = void (*)(id, SEL, type, NSString*); \
     if (target != self) reinterpret_cast<Call>(objc_msgSend)(target, selector, value, key); \
@@ -389,6 +481,15 @@ void defaultsSetDomain(id self, SEL selector, NSDictionary* value, NSString* nam
     if (target != self) reinterpret_cast<Call>(objc_msgSend)(target, selector, value, name);
     else reinterpret_cast<Call>(originalDefaultsOperation(selector))(self, selector, value, name);
 }
+void defaultsSetObjectInDomain(id self, SEL selector, id value, NSString* key, NSString* domain) {
+    traceNavigationPreference(sel_getName(selector), (__bridge CFStringRef)key, self,
+        (__bridge CFStringRef)domain, __builtin_return_address(0));
+    id target = defaultsReceiver(self);
+    using Call = void (*)(id, SEL, id, NSString*, NSString*);
+    domain = defaultsDomainName(domain);
+    if (target != self) reinterpret_cast<Call>(objc_msgSend)(target, selector, value, key, domain);
+    else reinterpret_cast<Call>(originalDefaultsOperation(selector))(self, selector, value, key, domain);
+}
 BOOL defaultsForcedInDomain(id self, SEL selector, NSString* key, NSString* name) {
     id target = defaultsReceiver(self);
     using Call = BOOL (*)(id, SEL, NSString*, NSString*);
@@ -412,6 +513,7 @@ DefaultsOperation defaultsOperations[] = {
     DEFAULTS_OPERATION("boolForKey:", defaultsBoolForKey),
     DEFAULTS_OPERATION("objectIsForcedForKey:", defaultsBoolForKey),
     DEFAULTS_OPERATION("setObject:forKey:", defaultsSetObject),
+    DEFAULTS_OPERATION("setObject:forKey:inDomain:", defaultsSetObjectInDomain),
     DEFAULTS_OPERATION("setValue:forKey:", defaultsSetObject),
     DEFAULTS_OPERATION("setURL:forKey:", defaultsSetObject),
     DEFAULTS_OPERATION("setInteger:forKey:", defaultsSetInteger),
@@ -450,6 +552,9 @@ void installDefaultsInstanceIsolation() {
         operation.method = class_getInstanceMethod(base, operation.selector);
         if (!operation.method) refuse("defaults_operation_unavailable");
         operation.original = method_getImplementation(operation.method);
+        if (strcmp(operation.name, "setObject:forKey:inDomain:") == 0 &&
+            strcmp(method_getTypeEncoding(operation.method), "v40@0:8@16@24@32") != 0)
+            refuse("defaults_named_setter_abi_unqualified");
         if (class_getMethodImplementation(object_getClass(capturedStandardDefaults), operation.selector) != operation.original)
             refuse("cached_defaults_override_unqualified");
     }
@@ -662,6 +767,7 @@ void installProcessIsolation() {
     Method applications = class_getInstanceMethod([NSWorkspace class], @selector(runningApplications));
     Method byID = class_getClassMethod([NSRunningApplication class], @selector(runningApplicationsWithBundleIdentifier:));
     if (!defaults || !applications || !byID) refuse("isolation_method_unavailable");
+    installCorePreferencesIsolation();
     installDefaultsInstanceIsolation();
     method_setImplementation(defaults, reinterpret_cast<IMP>(standardDefaults));
     originalRunningApplications = reinterpret_cast<NSArray*(*)(id, SEL)>(method_setImplementation(applications, reinterpret_cast<IMP>(runningApplications)));
