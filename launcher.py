@@ -132,7 +132,7 @@ def launch(source: Path, project: Path | None, cache: Path, helper: Path,
         args = [str(app / EXECUTABLE)]
         if project:
             args.append(str(project))
-        args += ["-ApplePersistenceIgnoreState", "YES", "-NSQuitAlwaysKeepsWindows", "NO", "-NSUseRemoteSavePanel", "NO"]
+        args += ["-ApplePersistenceIgnoreState", "YES", "-NSQuitAlwaysKeepsWindows", "NO"]
         with (run_dir / "console.log").open("ab") as console:
             process = subprocess.Popen(args, env=env, cwd=run_dir, stdin=subprocess.DEVNULL,
                                        stdout=console, stderr=console, start_new_session=True)

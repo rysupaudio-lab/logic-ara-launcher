@@ -3,7 +3,7 @@ import AppKit
 import CryptoKit
 import Darwin
 
-let launcherVersion = "0.2.0-candidate.4"
+let launcherVersion = "0.2.0-candidate.5"
 let enginePath = "Contents/Frameworks/MAAudioEngine.framework/Versions/A/MAAudioEngine"
 let corePath = "Contents/Frameworks/MACore.framework/Versions/A/MACore"
 let executablePath = "Contents/MacOS/Logic Pro"
@@ -198,7 +198,7 @@ final class Session {
             let consoleURL = run.appendingPathComponent("console.log"); fm.createFile(atPath: consoleURL.path, contents: nil, attributes: [.posixPermissions: 0o600])
             let console = try FileHandle(forWritingTo: consoleURL); defer { try? console.close() }
             let task = try OwnedChild(executable: app.appendingPathComponent(executablePath),
-                                      arguments: (project.map { [$0.path] } ?? []) + ["-ApplePersistenceIgnoreState", "YES", "-NSQuitAlwaysKeepsWindows", "NO", "-NSUseRemoteSavePanel", "NO"], environment: env, directory: run, console: console)
+                                      arguments: (project.map { [$0.path] } ?? []) + ["-ApplePersistenceIgnoreState", "YES", "-NSQuitAlwaysKeepsWindows", "NO"], environment: env, directory: run, console: console)
             process = task
             receipt["pid"] = task.processIdentifier; receipt["process_group"] = getpgid(task.processIdentifier); receipt["status"] = "starting"; try jsonWrite(receipt, manifest)
             changed("Starting the private Logic copy and waiting for its ARA bridge…")
@@ -280,11 +280,11 @@ final class LauncherDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate 
     func applicationDidFinishLaunching(_ notification: Notification) {
         let menu = NSMenu(); let appItem = NSMenuItem(); menu.addItem(appItem)
         let submenu = NSMenu(); submenu.addItem(withTitle: "Quit Logic ARA Launcher", action: #selector(NSApplication.terminate(_:)), keyEquivalent: "q"); appItem.submenu = submenu; NSApp.mainMenu = menu
-        window = NSWindow(contentRect: NSRect(x: 0, y: 0, width: 600, height: 380), styleMask: [.titled, .closable, .miniaturizable], backing: .buffered, defer: false)
+        window = NSWindow(contentRect: NSRect(x: 0, y: 0, width: 600, height: 420), styleMask: [.titled, .closable, .miniaturizable], backing: .buffered, defer: false)
         window.title = "Logic ARA Launcher"; window.delegate = self; window.center(); window.isReleasedWhenClosed = false
         let stack = NSStackView(); stack.orientation = .vertical; stack.alignment = .leading; stack.spacing = 14; stack.translatesAutoresizingMaskIntoConstraints = false
         let title = NSTextField(labelWithString: "Native ARA 2 • Logic Pro 12.4 (6707)"); title.font = .boldSystemFont(ofSize: 20); stack.addArrangedSubview(title)
-        let intro = NSTextField(wrappingLabelWithString: "Experimental candidate. Launches an unchanged private copy of your licensed Logic. Use backed-up projects. Your installed Logic stays untouched. Third-party plug-in licenses are required."); stack.addArrangedSubview(intro)
+        let intro = NSTextField(wrappingLabelWithString: "Experimental candidate. Launches an unchanged private copy of your licensed Logic. Use backed-up projects. Your installed Logic stays untouched. Third-party plug-in licenses are required. macOS file dialogs share navigation history with regular Logic."); stack.addArrangedSubview(intro)
         for (label, action) in [("Launch Logic", #selector(launchEmpty)), ("Open a backed-up project…", #selector(openProject)), ("Check compatibility…", #selector(check)), ("Choose Logic application…", #selector(chooseLogic)), ("Clean finished session", #selector(cleanup))] {
             let button = NSButton(title: label, target: self, action: action); buttons.append(button); stack.addArrangedSubview(button)
         }

@@ -37,7 +37,7 @@ class NativeLauncherTests(unittest.TestCase):
     def test_version_has_no_runtime_dependency(self):
         result = self.run_native("--version")
         self.assertEqual(result.returncode, 0, result.stderr)
-        self.assertEqual(result.stdout.strip(), "0.2.0-candidate.4")
+        self.assertEqual(result.stdout.strip(), "0.2.0-candidate.5")
 
     def test_unknown_build_refuses_without_creating_cache(self):
         source = Path(self.temp.name) / "Unknown Logic.app"

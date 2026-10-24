@@ -40,6 +40,10 @@ The selected Logic installation is verified before a private copy is prepared.
 The visible private Logic application is used normally. Insert an ARA-capable
 AU in its ARA variant; normal third-party licensing still applies.
 
+macOS file dialogs share the last-used folder and Go To Folder window placement
+with regular Logic. DAW and audio settings use the launcher's private preferences;
+this is not complete filesystem or system-service isolation.
+
 Keep the launcher open while working. Quit its Logic copy normally when finished;
 the launcher verifies the original installation and removes the private copy.
 If you quit the launcher first or it stops unexpectedly, any live Logic copy and

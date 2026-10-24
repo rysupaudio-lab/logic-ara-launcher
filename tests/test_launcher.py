@@ -96,11 +96,9 @@ class AdmissionTests(unittest.TestCase):
         def prepare(source, destination, receipt):
             destination.mkdir()
         def spawn(*args, **kwargs):
-            # The native AppKit config is supplied at exec, before its cache can
-            # initialize; this fixture never creates a panel or starts a DAW.
-            argv = args[0]
-            at = argv.index("-NSUseRemoteSavePanel")
-            self.assertEqual(argv[at + 1], "NO")
+            # Keep ordinary system file panels: this OS's native local panel
+            # cannot complete Save even in the unredirected control app.
+            self.assertNotIn("-NSUseRemoteSavePanel", args[0])
             (Path(kwargs["cwd"]) / "bridge.log").write_text("bridge_refused reason=test\n")
             return child
         with patch.object(launcher, "inspect_logic", return_value=receipt.copy()), patch.object(launcher, "prepare_copy", side_effect=prepare), patch.object(launcher.subprocess, "Popen", side_effect=spawn):
