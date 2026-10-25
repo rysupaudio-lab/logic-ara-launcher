@@ -1,13 +1,13 @@
 # Native installable candidate status
 
-Version 0.2.0-candidate.5 is signed for local qualification. It is not yet a
-notarized or qualified public binary release. The published alpha.2 remains
-source-only. No Apple application, third-party plug-in or license is distributed.
+Version 0.2.0-candidate.5 is Developer ID signed and notarized, with validated
+stapled tickets and accepted Gatekeeper assessments for the app and DMG. It has
+not been published as a binary release. The published alpha.2 remains source-only. No Apple application, third-party plug-in or license is distributed.
 
 The native Apple Silicon app requires no Python or compiler at runtime. The
 normal launcher UI opened a backed-up synthetic Logic project, displayed actual
 ARA Audio Unit editors, saved the native project and exported 48 kHz/24-bit
-offline WAVs through normal Logic dialogs. Four independent Logic processes
+offline WAVs through normal Logic dialogs. Five independent Logic processes
 exited normally; each temporary application copy was removed, and the installed
 Logic signature and pinned executable/framework bytes verified unchanged.
 These runtime checks used Logic Pro 12.4 (6707) on macOS 27.0 (26A428).
@@ -48,7 +48,7 @@ document processing behavior, but does not establish its behavior in an
 officially supported vendor host. The failed mixed-setting criterion is retained;
 no fitting or tolerance mask was used to turn it into a pass.
 
-A separate cold reopen launched from the extracted final candidate ZIP with both
+A separate cold reopen launched from the extracted pre-resource-finalization ZIP with both
 Formants saved at +5. Both actual ARA editors recalled the controls, and its
 408000-frame native offline bounce was sample-identical to the matching +5 warm
 reference (zero changed samples). That saved matching state has one additional
@@ -58,10 +58,21 @@ baseline were verified after this extracted-artifact run.
 
 The actual bound VoiceAssist 1.3.24 editor reported an expired trial. Melodyne
 5.4.2 required activation for editing. Neither was activated or given a new
-trial. A normal existing-license Sync Vx check and the final supported third-party
-scope remain pending. Installed third-party code pins stayed unchanged.
+trial. Sync Vx's actual mono ARA insert opened its normal editor/setup wizard
+without an activation or trial prompt and saved as a native ARA insert. This is
+editor availability only: participating source tracks, alignment/editing, DSP
+licensing and cold audio remain unqualified. The final supported third-party
+scope remains pending. Installed third-party code pins stayed unchanged.
 
 The 15.4 deployment target is a minimum executable requirement, not a claim that
 all macOS builds are qualified. Runtime method signatures and owning images are
 checked before activation. Foundation-only preference controls also passed on
 macOS 26.2; that is not a normal Logic runtime qualification on that OS.
+
+The final bundle changes only the bundled install guide and its resource seal.
+Re-signing that seal updates the launcher executable's embedded code signature;
+its Mach-O bytes outside the signature command/blob are identical, and the bridge
+remains byte-identical. The final extracted, notarized ZIP opened the Sync Vx
+fixture through its normal launcher UI and completed Save/Quit and cleanup with
+all 2021 normal preference keys unchanged. A matching-settings cold render on
+this exact final signature remains queued.

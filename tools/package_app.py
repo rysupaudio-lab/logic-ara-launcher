@@ -3,6 +3,7 @@
 import argparse
 import hashlib
 import json
+import os
 import plistlib
 from pathlib import Path
 import shutil
@@ -69,6 +70,22 @@ with tempfile.TemporaryDirectory(prefix="logic-ara-package-", dir=out) as scratc
         "Read the release qualification and known limitations before using backed-up projects.\n"
     )
     run("/usr/bin/hdiutil", "create", "-ov", "-format", "UDZO", "-volname", args.name, "-srcfolder", staging, dmg_path)
+    # Some macOS builds leave the creator's unmounted write-once device
+    # attached after create returns. Its exclusive file access blocks notarytool.
+    # Eject only this invocation's exact newly created image, never other images.
+    images = plistlib.loads(subprocess.check_output(["/usr/bin/hdiutil", "info", "-plist"]))
+    attached = [item for item in images.get("images", []) if item.get("image-path") == str(dmg_path)]
+    if attached:
+        if len(attached) != 1:
+            raise RuntimeError("Ambiguous created-image attachment; preserved for review")
+        image = attached[0]
+        entities = image.get("system-entities", [])
+        if image.get("owner-uid") != os.getuid() or any("mount-point" in item for item in entities):
+            raise RuntimeError("Created image has an unexpected owner or mounted user; preserved for review")
+        whole_disk = next((item.get("dev-entry") for item in entities if item.get("content-hint") == "GUID_partition_scheme"), None)
+        if not whole_disk or not whole_disk.startswith("/dev/disk") or not whole_disk[9:].isdigit():
+            raise RuntimeError("Created-image device identity unavailable; preserved for review")
+        run("/usr/bin/hdiutil", "detach", whole_disk)
 if args.identity:
     run("/usr/bin/codesign", "--sign", identity, "--timestamp", dmg_path)
 native_after = {str(p.relative_to(app)): hashlib.sha256(p.read_bytes()).hexdigest() for p in native_files}

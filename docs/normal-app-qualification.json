@@ -5,9 +5,11 @@
   "bridgeCommit": "aa85146",
   "status": {
     "signedDeveloperID": true,
-    "notarized": false,
+    "notarized": true,
     "published": false,
-    "overallConsumerQualificationComplete": false
+    "overallConsumerQualificationComplete": false,
+    "appNotarized": true,
+    "DMGNotarized": true
   },
   "runtime": {
     "LogicVersion": "12.4",
@@ -19,7 +21,7 @@
     "deploymentTargetEstablishesOtherOSQualification": false
   },
   "nativeFilesSHA256": {
-    "launcher": "e3ddb762a2d5269f29d2b325aeb53b5734c60ffd975cc8ef0625dca0ef77f836",
+    "launcher": "33af251ff298d7dcf501977e672c8a17fa8d8cf0781ebb052c2a3b0a2c7fc628",
     "bridge": "c32dd4aac31d10c769452f1f947bf636cfab8853907daecc911b7c4a2f2ff343"
   },
   "distribution": {
@@ -29,7 +31,15 @@
     "thirdPartyPluginsBundled": false,
     "ZIPExtractedSignatureAndNativePinsVerified": true,
     "readonlyDMGSignatureAndNativePinsVerified": true,
-    "finalZIPNormalGUIEntryTested": true
+    "finalZIPNormalGUIEntryTested": true,
+    "priorCandidateZIPNormalGUIEntryTested": true,
+    "appStapledTicketValidated": true,
+    "appGatekeeperAssessment": "accepted; Notarized Developer ID",
+    "finalZIPsha256": "b406c3b6f8c36549a3412af7ea2487963ebca8e010a032db73842b12ea30a605",
+    "finalDMGsha256": "1414b81757e12d29588057a12322212d340939372d473a0808cedde05d7ba4c5",
+    "finalDMGStapledTicketValidated": true,
+    "finalDMGGatekeeperAssessment": "accepted; Notarized Developer ID",
+    "finalDMGReadonlyMountedAppSignatureTicketAndPinsVerified": true
   },
   "normalApp": {
     "nativeProjectOpen": true,
@@ -86,7 +96,7 @@
   "licenses": {
     "VoiceAssist1.3.24": "bound editor reported expired trial; not activated",
     "Melodyne5.4.2": "activation required for editing; not activated",
-    "SyncVx": "bound normal native test pending"
+    "SyncVx": "genuine mono ARA editor and setup wizard opened without activation/trial prompt; functional source/DSP/edit/audio still unqualified"
   },
   "preservation": {
     "originalLogicSignatureAndCodePinsUnchanged": true,
@@ -103,9 +113,9 @@
     "forceQuitSignalsOrDontSaveUsed": false
   },
   "remaining": [
-    "second independent matching+5 saved-state cold test",
-    "normal existing-license Sync Vx bound editor/native test",
-    "root final scope, notarization and publication decision"
+    "second independent matching+5 saved-state cold test on final resource/signature",
+    "two-mono-instance normal Sync Vx REF/SYNC source acquisition, edit, native audio and cold proof",
+    "root final scope and publication decision"
   ],
   "notClaimed": [
     "universal ARA plug-in compatibility",
@@ -114,5 +124,14 @@
     "arbitrary customer-session qualification",
     "exact third-party source PCM fingerprints",
     "independent mixed Formant settings"
-  ]
+  ],
+  "priorCandidateLauncherSHA256": "e3ddb762a2d5269f29d2b325aeb53b5734c60ffd975cc8ef0625dca0ef77f836",
+  "resourceFinalization": {
+    "guideSourceCommit": "805f906",
+    "launcherRecompiled": false,
+    "helperResigned": false,
+    "launcherCodeOutsideSignatureExact": true,
+    "launcherEmbeddedSignatureUpdatedForResourceSeal": true,
+    "normalEntryOnFinalResourceSignaturePending": false
+  }
 }

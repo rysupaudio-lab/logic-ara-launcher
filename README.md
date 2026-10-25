@@ -22,8 +22,9 @@ launcher alone does not repair its editor/archive issues. See
 [the historical development qualification](docs/qualification.md).
 
 VoiceAssist's bound editor reported an expired trial; Melodyne required activation
-for editing. No activation or new trial was performed. Sync Vx's bound native test
-remains pending. No broad third-party or arbitrary customer-session compatibility
+for editing. No activation or new trial was performed. Sync Vx's actual mono ARA editor
+opened without an activation/trial prompt; functional source/DSP/edit/audio tests
+remain pending. No broad third-party or arbitrary customer-session compatibility
 is claimed.
 
 ## Install the candidate
