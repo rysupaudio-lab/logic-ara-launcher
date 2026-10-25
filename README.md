@@ -29,13 +29,14 @@ is claimed.
 
 ## Install the candidate
 
-The native 0.2.0-candidate.5 is being qualified locally. It is **not yet a public
-binary release**. Published alpha.2 remains a source-only release.
+The native 0.2.0-candidate.5 app and disk image are signed and notarized. See
+[release status and assets](https://github.com/rysupaudio-lab/logic-ara-launcher/releases)
+for distribution availability. Historical alpha.2 is source-only.
 
 The installable candidate requires an Apple Silicon Mac, macOS 15.4 or later,
 and your own licensed original Apple-signed Logic Pro **12.4 (6707)**. The deployment
 target is a minimum executable requirement, not proof of compatibility across
-macOS versions: the current candidate is being tested on macOS 27.0 (26A428).
+macOS versions: normal-app workflows were tested on macOS 27.0 (26A428).
 It checks the exact Foundation/CoreFoundation method signatures and images at
 startup and refuses an incompatible runtime. It contains
 a native application and our bridge, with no Python or compiler requirement at
@@ -126,8 +127,8 @@ available. ARA access does not remove a plug-in's licensing requirements.
   audio devices, sound libraries and plug-ins. Existing Logic processes are not
   attached to or terminated. Stopping the launcher preserves a still-running
   private Logic copy and its lock; quit that copy yourself when finished.
-- A built app can be signed and packaged without Python in its runtime. Public
-  distribution and notarization remain pending the new normal-app qualification.
+- The native app needs no Python or compiler at runtime. The notarized candidate
+  remains limited to the documented profiles; see release status for availability.
 
 ## Development
 

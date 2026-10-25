@@ -1,8 +1,10 @@
 # Native installable candidate status
 
 Version 0.2.0-candidate.5 is Developer ID signed and notarized, with validated
-stapled tickets and accepted Gatekeeper assessments for the app and DMG. It has
-not been published as a binary release. The published alpha.2 remains source-only. No Apple application, third-party plug-in or license is distributed.
+stapled tickets and accepted Gatekeeper assessments for the app and DMG. Its qualification covers
+a bounded experimental profile. See
+[release status and assets](https://github.com/rysupaudio-lab/logic-ara-launcher/releases)
+for distribution availability. Historical alpha.2 remains source-only. No Apple application, third-party plug-in or license is distributed.
 
 The native Apple Silicon app requires no Python or compiler at runtime. The
 normal launcher UI opened a backed-up synthetic Logic project, displayed actual
