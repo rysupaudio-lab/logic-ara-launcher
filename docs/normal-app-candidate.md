@@ -7,7 +7,7 @@ not been published as a binary release. The published alpha.2 remains source-onl
 The native Apple Silicon app requires no Python or compiler at runtime. The
 normal launcher UI opened a backed-up synthetic Logic project, displayed actual
 ARA Audio Unit editors, saved the native project and exported 48 kHz/24-bit
-offline WAVs through normal Logic dialogs. Five independent Logic processes
+offline WAVs through normal Logic dialogs. Six independent Logic processes
 exited normally; each temporary application copy was removed, and the installed
 Logic signature and pinned executable/framework bytes verified unchanged.
 These runtime checks used Logic Pro 12.4 (6707) on macOS 27.0 (26A428).
@@ -48,13 +48,20 @@ document processing behavior, but does not establish its behavior in an
 officially supported vendor host. The failed mixed-setting criterion is retained;
 no fitting or tolerance mask was used to turn it into a pass.
 
-A separate cold reopen launched from the extracted pre-resource-finalization ZIP with both
-Formants saved at +5. Both actual ARA editors recalled the controls, and its
-408000-frame native offline bounce was sample-identical to the matching +5 warm
-reference (zero changed samples). That saved matching state has one additional
-independent cold-process test; the mixed-setting failure above remains. Normal
-Save/Quit, private-copy cleanup and the complete 2021-key normal preference
-baseline were verified after this extracted-artifact run.
+The saved matching +5 state was reopened in two independent cold processes from
+byte-exact copies of the same immutable warm save. Both actual ARA editors
+recalled the controls. Each 408000-frame native 48 kHz/24-bit stereo bounce was
+sample-identical to the matching +5 warm reference and to the other cold render:
+zero changed samples, maximum difference zero, RMS difference zero. The PCM32
+SHA-256 is `3ab67fa56304cf4bb22ab824a7cc4cbe34f96a17dc90efea461f5efd0c9208bf`.
+
+The first matching cold used the preceding bundled guide/resource signature;
+the second used the exact final notarized ZIP. Native launcher bytes outside its
+signature command/blob and the complete bridge are identical across those
+artifacts. Normal Save/Quit, private-copy cleanup and the full 2021-key normal
+preference baseline were verified after both runs. The final run also verified
+fresh CF daemon and disk dictionaries after only the two known navigation
+preimages were restored, with no repeated preference writes.
 
 The actual bound VoiceAssist 1.3.24 editor reported an expired trial. Melodyne
 5.4.2 required activation for editing. Neither was activated or given a new
@@ -74,5 +81,4 @@ Re-signing that seal updates the launcher executable's embedded code signature;
 its Mach-O bytes outside the signature command/blob are identical, and the bridge
 remains byte-identical. The final extracted, notarized ZIP opened the Sync Vx
 fixture through its normal launcher UI and completed Save/Quit and cleanup with
-all 2021 normal preference keys unchanged. A matching-settings cold render on
-this exact final signature remains queued.
+all 2021 normal preference keys unchanged. The matching-settings cold render on this exact final signature passed.

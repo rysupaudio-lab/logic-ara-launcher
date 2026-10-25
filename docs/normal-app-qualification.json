@@ -6,10 +6,10 @@
   "status": {
     "signedDeveloperID": true,
     "notarized": true,
-    "published": false,
-    "overallConsumerQualificationComplete": false,
     "appNotarized": true,
-    "DMGNotarized": true
+    "DMGNotarized": true,
+    "matchingAutochoirProfileQualified": true,
+    "generalCompatibilityQualified": false
   },
   "runtime": {
     "LogicVersion": "12.4",
@@ -47,7 +47,8 @@
     "nativeSave": true,
     "normalOfflineBounce48k24": true,
     "normalQuitAndPrivateCopyCleanup": true,
-    "privateVendorAPIsUsed": false
+    "privateVendorAPIsUsed": false,
+    "finalNotarizedZIPMatchingColdPass": true
   },
   "autochoir": {
     "version": "1.0.0",
@@ -78,7 +79,7 @@
     },
     "matchingFormantPlus5": {
       "warmReference": "both inserts .0500 detune and +5 Formant",
-      "independentColdProcessCount": 1,
+      "independentColdProcessCount": 2,
       "fromFinalExtractedZIP": true,
       "actualBothEditorControlsRecalled": true,
       "frames": 408000,
@@ -89,9 +90,14 @@
       "changedValues": 0,
       "maxAbsoluteDifference": 0.0,
       "RMSDifference": 0.0,
-      "PCM32SHA256": "3ab67fa56304cf4bb22ab824a7cc4cbe34f96a17dc90efea461f5efd0c9208bf"
+      "PCM32SHA256": "3ab67fa56304cf4bb22ab824a7cc4cbe34f96a17dc90efea461f5efd0c9208bf",
+      "finalNotarizedSignatureColdProcessCount": 1,
+      "priorResourceSignatureColdProcessCount": 1,
+      "bothColdsSampleIdenticalToWarmAndEachOther": true,
+      "nativeCodeOutsideSignatureExactAcrossBoth": true,
+      "bridgeWholeFileExactAcrossBoth": true
     },
-    "scope": "Matching controls and one saved matching-state cold render are proven. Independent differing Formant settings on shared-document inserts are not qualified."
+    "scope": "The saved matching .0500/+5 controls and native audio are proven across warm and two independent cold processes; the second cold uses the final notarized ZIP. Independent differing Formant settings on shared-document inserts remain unqualified."
   },
   "licenses": {
     "VoiceAssist1.3.24": "bound editor reported expired trial; not activated",
@@ -110,12 +116,13 @@
     "QAOnlyKnownTaskPreimagesRestoredAfterActualExit": true,
     "normalPreferenceKeyCount": 2021,
     "normalFullDictionaryExactAfterScopedRestoration": true,
-    "forceQuitSignalsOrDontSaveUsed": false
+    "forceQuitSignalsOrDontSaveUsed": false,
+    "finalColdFreshCFDaemonAndDiskDictionaryExact": true,
+    "finalColdNoRepeatedPreferenceWrites": true
   },
   "remaining": [
-    "second independent matching+5 saved-state cold test on final resource/signature",
-    "two-mono-instance normal Sync Vx REF/SYNC source acquisition, edit, native audio and cold proof",
-    "root final scope and publication decision"
+    "normal Sync Vx multi-instance REF/SYNC source acquisition, edit, audio and cold qualification",
+    "additional licensed ARA plug-ins, OS/build combinations and arbitrary customer-session qualification"
   ],
   "notClaimed": [
     "universal ARA plug-in compatibility",
@@ -133,5 +140,10 @@
     "launcherCodeOutsideSignatureExact": true,
     "launcherEmbeddedSignatureUpdatedForResourceSeal": true,
     "normalEntryOnFinalResourceSignaturePending": false
+  },
+  "release": {
+    "tag": "v0.2.0-candidate.5",
+    "channel": "experimental prerelease",
+    "publicationState": "see GitHub release status"
   }
 }
