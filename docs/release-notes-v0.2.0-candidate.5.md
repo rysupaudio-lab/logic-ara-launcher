@@ -4,7 +4,8 @@ This experimental prerelease provides an installable native Apple Silicon app
 for **Logic Pro 12.4 (6707)**. It verifies your licensed original Apple-signed
 Logic, starts an unchanged private copy with the ARA bridge, and removes that
 copy after normal Quit. Your installed Logic is read and verified, never patched
-or re-signed.
+or re-signed. The runtime bridge uses private Apple host interfaces; the
+third-party plug-in tests use normal UI and public ARA interfaces.
 
 The app and DMG are Developer ID signed and notarized. Stapled tickets validate,
 and Gatekeeper accepts both as Notarized Developer ID. The ZIP contains the

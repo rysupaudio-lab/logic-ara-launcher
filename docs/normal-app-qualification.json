@@ -47,8 +47,9 @@
     "nativeSave": true,
     "normalOfflineBounce48k24": true,
     "normalQuitAndPrivateCopyCleanup": true,
-    "privateVendorAPIsUsed": false,
-    "finalNotarizedZIPMatchingColdPass": true
+    "finalNotarizedZIPMatchingColdPass": true,
+    "privateThirdPartyPluginAPIsUsed": false,
+    "privateAppleHostInterfacesUsed": true
   },
   "autochoir": {
     "version": "1.0.0",
