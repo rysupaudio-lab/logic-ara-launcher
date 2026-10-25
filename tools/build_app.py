@@ -35,5 +35,5 @@ with (app / "Contents/Info.plist").open("wb") as stream:
                    "NSHumanReadableCopyright": "Copyright © 2026 Rys Up Audio LLC. MIT License. Independent of Apple.",
                    "NSHighResolutionCapable": True}, stream)
 shutil.copy2(root / "LICENSE", resources / "LICENSE.txt")
-shutil.copy2(root / "README.md", resources / "README.md")
+shutil.copy2(root / "docs/install-guide.md", resources / "README.md")
 print(app)
