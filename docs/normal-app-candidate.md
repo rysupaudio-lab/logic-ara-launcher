@@ -14,6 +14,21 @@ exited normally; each temporary application copy was removed, and the installed
 Logic signature and pinned executable/framework bytes verified unchanged.
 These runtime checks used Logic Pro 12.4 (6707) on macOS 27.0 (26A428).
 
+## Current bounded third-party matrix
+
+| Plug-in | Qualified observation | Retained limit |
+| --- | --- | --- |
+| autochoir 1.0.0 | Matching .0500 Detune / +5 Formant: edited warm and two cold native renders exact | Different Formants on shared-document inserts fail warm/cold equality |
+| Sync Vx 17.1.42 | Two mono first-slot ARA inserts, REF/Sync vocal source rows, TimeWarp A / 100, native Save and two exact cold recalls | Pitch/general conformance unqualified; Time-off vs host-bypass region-edge residual retained |
+| VoiceAssist 1.3.24 | Bound editor opened | Expired trial; functional DSP unqualified |
+| Melodyne 5.4.2 | Installed genuine ARA component identified | Activation required for editing; functional DSP unqualified |
+
+The additive [Sync Vx Time report](syncvx-time-qualification.md) and
+[JSON](syncvx-time-qualification.json) qualify the exact unchanged published app.
+The original qualification JSON and four original release assets are immutable
+publication-time snapshots; their earlier Sync Vx pending status is historical.
+This matrix is not an ARA certification or universal plug-in support claim.
+
 ## File dialogs and preference scope
 
 DAW/audio preference access is redirected to the private suite. The normal macOS
@@ -67,11 +82,9 @@ preimages were restored, with no repeated preference writes.
 
 The actual bound VoiceAssist 1.3.24 editor reported an expired trial. Melodyne
 5.4.2 required activation for editing. Neither was activated or given a new
-trial. Sync Vx's actual mono ARA insert opened its normal editor/setup wizard
-without an activation or trial prompt and saved as a native ARA insert. This is
-editor availability only: participating source tracks, alignment/editing, DSP
-licensing and cold audio remain unqualified. The final supported third-party
-scope remains pending. Installed third-party code pins stayed unchanged.
+trial. Sync Vx's subsequent functional Time qualification is recorded in the
+additive supplement linked above, including its source-edge and preservation
+limits. Installed third-party code pins stayed unchanged.
 
 The 15.4 deployment target is a minimum executable requirement, not a claim that
 all macOS builds are qualified. Runtime method signatures and owning images are

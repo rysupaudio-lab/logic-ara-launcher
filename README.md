@@ -8,11 +8,13 @@ patched or re-signed. Unknown builds are refused.
 **Experimental candidate.** Admission is limited to one exact Logic build and
 reviewed native runtime assumptions. The native app has opened backed-up projects,
 displayed genuine ARA AU editors, saved native projects and exported audio through
-normal Logic dialogs. Third-party checks use autochoir 1.0.0 with synthetic mono
-and stereo sources at 48 kHz. Matching settings produced an exact warm/cold render;
+normal Logic dialogs. Third-party checks cover autochoir 1.0.0 with synthetic mono/stereo sources and
+Waves Sync Vx 17.1.42 Time with mono vocals at 48 kHz. The documented profiles
+produced exact warm/two-cold renders;
 independent differing Formant settings across shared-document inserts are **not
 qualified**. See [the current evidence and limitations](docs/normal-app-candidate.md)
-and [machine-readable results](docs/normal-app-qualification.json).
+and the additive [Sync Vx Time supplement](docs/syncvx-time-qualification.md).
+The [original qualification snapshot](docs/normal-app-qualification.json) remains unchanged.
 
 Earlier source-only alpha.2 tests used an unreleased RysUpPitch development build:
 six tracks/twelve stereo regions and a mixed mono/stereo session passed bounded
@@ -22,10 +24,11 @@ launcher alone does not repair its editor/archive issues. See
 [the historical development qualification](docs/qualification.md).
 
 VoiceAssist's bound editor reported an expired trial; Melodyne required activation
-for editing. No activation or new trial was performed. Sync Vx's actual mono ARA editor
-opened without an activation/trial prompt; functional source/DSP/edit/audio tests
-remain pending. No broad third-party or arbitrary customer-session compatibility
-is claimed.
+for editing. No activation or new trial was performed. Sync Vx's two actual mono
+ARA inserts acquired vocal source rows, processed a Time edit, saved native ARA
+state and recalled sample-identical audio in two independent cold processes.
+Pitch and general Sync Vx conformance remain unqualified. No broad third-party
+or arbitrary customer-session compatibility is claimed.
 
 ## Install the candidate
 

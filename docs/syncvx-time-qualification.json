@@ -1,0 +1,147 @@
+{
+  "schema": "logic-normal-app-syncvx-supplement/1",
+  "candidate": "0.2.0-candidate.5",
+  "qualificationDate": "2026-10-24",
+  "status": "bounded Sync Vx Time workflow passed",
+  "additiveToOriginalQualification": true,
+  "originalTagAndFourAssetsModified": false,
+  "runtime": {
+    "LogicVersion": "12.4",
+    "LogicBuild": "6707",
+    "architecture": "arm64",
+    "macOS": "27.0",
+    "macOSBuild": "26A428",
+    "otherOSOrHostBuildsQualified": false
+  },
+  "artifactSHA256": {
+    "launcher": "33af251ff298d7dcf501977e672c8a17fa8d8cf0781ebb052c2a3b0a2c7fc628",
+    "bridge": "c32dd4aac31d10c769452f1f947bf636cfab8853907daecc911b7c4a2f2ff343",
+    "ZIP": "b406c3b6f8c36549a3412af7ea2487963ebca8e010a032db73842b12ea30a605",
+    "DMG": "1414b81757e12d29588057a12322212d340939372d473a0808cedde05d7ba4c5"
+  },
+  "plugin": {
+    "name": "Waves Sync Vx",
+    "version": "17.1.42",
+    "build": "17.1.42.50",
+    "AU": "mono ARA variant, first audio-effect slot on each participating track",
+    "manufacturer": "ksWV",
+    "subtype": "TANM",
+    "nativeHostType": "arax",
+    "underlyingAUType": "aufx",
+    "moduleSHA256": "b02492cee94b4795d57bd19c306a0e2db74d17e5d945396852ac0465dc6aebfd",
+    "existingVendorCodeSignatureStatus": "pre-existing ad-hoc/strict-invalid status unchanged; no repair or bypass",
+    "licenseActivationOrTrialStarted": false
+  },
+  "workflow": {
+    "normalLauncherOpen": true,
+    "normalTwoARAInsertsAndVendorEditor": true,
+    "referenceTrackCount": 1,
+    "syncTrackCount": 1,
+    "referenceAssignment": "REF 1",
+    "syncAssignment": "1",
+    "actualNamedSourceRowsAndWaveforms": true,
+    "actualStatus": "IN SYNC",
+    "TimeAlgorithm": "TimeWarp A",
+    "TimeAmount": 100,
+    "globalTimeEnabled": true,
+    "globalPitchEnabled": false,
+    "sourceRate": 48000,
+    "sourceChannels": "mono",
+    "sourceClipPatterns": [
+      "full",
+      "reused",
+      "trimmed source offsets"
+    ],
+    "bothParticipatingTrackGainDB": -6.0,
+    "normalNativeSave": true,
+    "nativeARAArchiveAndMediaMap": true,
+    "normalOfflineBounce": true,
+    "hardwarePlaybackUsed": false,
+    "privateThirdPartyPluginAPIsUsed": false,
+    "privateAppleHostInterfacesUsed": true
+  },
+  "audio": {
+    "sampleRate": 48000,
+    "PCMBitDepth": 24,
+    "channels": 2,
+    "frames": 408000,
+    "comparison": "exact decoded PCM; no alignment, gain fitting, trimming or tolerance mask",
+    "warmTimeOnRepeatExact": true,
+    "TimeOffCountercontrolExactInitialTimeOff": true,
+    "timeOnVsOff": {
+      "changedDecodedValues": 562186,
+      "maxAbsoluteDifference": 0.47179436683654785,
+      "RMSDifference": 0.06170431288219451
+    },
+    "independentColdProcessCount": 2,
+    "bothColdsUseExactFinalPublishedAppAndBridge": true,
+    "bothColdInputsExactImmutableWarmSave": true,
+    "actualAssignmentsTimeAndInSyncRecalled": true,
+    "bothColdsSampleIdenticalToWarmAndEachOther": true,
+    "coldChangedDecodedValues": 0,
+    "coldMaxAbsoluteDifference": 0.0,
+    "coldRMSDifference": 0.0,
+    "timeOnPCM32SHA256": "ad30a6fcfb749174c47b2cd247deb1b1edd1551b03c66dbf12226b6fd8e36ff6",
+    "timeOffPCM32SHA256": "58ed5f8f7eb3dcbca853161e4def69306e9e9140cf8d465069083185e838fb86"
+  },
+  "sourceBoundary": {
+    "normalHostBypassVsCurrentVocalNativeArrangement": "all rendered values within one 24-bit LSB using decoded native gain/pan/clip geometry; no fitted correction or excluded intervals",
+    "exactLiveARASourceCallbackPCMIdentityMeasured": false,
+    "TimeOffVsHostBypassSampleIdentical": false,
+    "TimeOffVsHostBypassChangedDecodedValues": 2302,
+    "TimeOffVsHostBypassMaxAbsoluteDifference": 0.0938868522644043,
+    "TimeOffVsHostBypassRMSDifference": 0.0019696349379443737,
+    "regionEdgeResidualRetainedAsLimitation": true
+  },
+  "savedState": {
+    "actualNativeMonoARAInserts": 2,
+    "nativeMediaGraphAndSourcePCMUnchanged": true,
+    "sourceRegionMapPairs": 8,
+    "warmOpaqueSyncArchiveBytes": 13701,
+    "warmOpaqueSyncArchiveSHA256": "ee8965b38a115462c7d1678a6744ece6739ae6bf982445999a92a87ff50ad324",
+    "coldSavedOpaqueSyncArchiveBytes": 13582,
+    "coldSavedOpaqueSyncArchiveSHA256": "b8884c790821a86a4f540138adebde51184130b6cab880fe71f13ec7ff4c6849",
+    "warmColdOpaqueArchiveByteIdentity": false,
+    "bothColdSavedARASidecarsAndActualAURecordsByteIdentical": true,
+    "opaqueArchiveContentsInterpreted": false
+  },
+  "preservation": {
+    "originalLogicSignatureAndCodePinsUnchanged": true,
+    "recordedInstalledThirdPartyCodeAndMetadataPinsUnchanged": true,
+    "recordedInstalledFileCount": 27,
+    "globalAudioDeviceDefaultsUnchanged": true,
+    "ownedProcessesNormallyExitedAndCopiesCleaned": true,
+    "forceQuitSignalsOrDontSaveUsed": false,
+    "sharedSystemNavigationHistoryKeys": [
+      "NSOSPLastRootDirectory",
+      "NSWindow Frame GoToSheet"
+    ],
+    "consumerRestoresNormalPreferences": false,
+    "warmNormalPreference2021KeyFreshReadExactAfterOneScopedWriteBatch": true,
+    "warmInitialReadbackRefusedThenLaterReadOnlyExact": true,
+    "warmPreferenceWriteRetried": false,
+    "cold1ConcurrentUnknownInstalledLogicObserved": true,
+    "cold1WholeNormalPreferencePreservationQualified": false,
+    "cold1OutsideWhitelistChangesPreserved": true,
+    "cold1GuardedRestorationRefusedBeforeAnyWrite": true,
+    "cold2NormalPreference2021KeysExactFreshBaseline": true,
+    "cold2PreferenceWriteBatchCount": 0
+  },
+  "notClaimed": [
+    "Sync Vx Pitch or every algorithm/edit type",
+    "exact live third-party source-buffer PCM identity",
+    "Time-off transparent bypass at region edges",
+    "warm/cold opaque archive byte identity",
+    "autochoir independent mixed Formant settings",
+    "arbitrary customer-session or other OS/build compatibility",
+    "universal ARA compatibility or conformance certification"
+  ],
+  "payloadExcluded": [
+    "source audio",
+    "project files",
+    "vendor archives or binaries",
+    "private helper or traces",
+    "private paths or process IDs",
+    "license payloads"
+  ]
+}
