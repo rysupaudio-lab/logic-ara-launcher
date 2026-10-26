@@ -1,5 +1,7 @@
 # Logic ARA Launcher
 
+> **Logic + FL downloads:** [Choose your DAW →](https://github.com/rysupaudio-lab/ara-launcher)
+
 Experimental native Apple Silicon ARA 2 launcher for **Logic Pro 12.4, build 6707**.
 It starts a signature-preserving private copy of your own Logic installation with
 a process-local bridge. The installed application is read and verified, never
